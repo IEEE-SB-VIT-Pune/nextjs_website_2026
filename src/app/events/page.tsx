@@ -13,6 +13,7 @@ import eventVector from "@/assets/images/events/icons/eventpageVector.png";
 import workshopIcon from "@/assets/images/events/icons/workshop_indivi.png";
 import ktIcon from "@/assets/images/events/icons/KT.png";
 
+
 const previousEvents = [
   {
     id: 1,
