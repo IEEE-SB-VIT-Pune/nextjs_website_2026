@@ -90,7 +90,9 @@ export default function ActivitiesPage() {
             <div className="space-y-4">
               <h2 className="text-2xl font-bold text-primary">CODING CLUB</h2>
               <p className="text-muted-foreground leading-relaxed">
-                Our mission is to create a fun and supportive environment where we develop programming and statistics skills together. We want to replace statistics anxiety and code fear with inspiration and motivation to learn, and here we will share our experience. The main vision of the club is to improve the art of competitive programming skills in the students and to make them ready for renowned competitions like ACM-ICPC, Google code jam, various Hackathons conducted at national and International levels etc.
+                Our mission is to create a fun and supportive environment where we develop programming skills together. We want to replace DSA anxiety and code fear with inspiration and motivation to learn, and here we will share our experience. The main vision of the club is to improve the art of competitive programming skills in the students and to make them ready.
+                <br></br>
+                Code-Zest is our flagship coding event which attracts students from across Pune City.
               </p>
             </div>
           </div>

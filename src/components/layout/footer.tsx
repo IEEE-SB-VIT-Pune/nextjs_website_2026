@@ -58,7 +58,7 @@ const Footer = () => {
               </a>
               <span className="flex items-center gap-2">
                 <MapPin className="h-4 w-4 text-primary" />
-                VIT Pune Campus
+                Vishwakarma Institute of Technology (VIT), Bibwewadi, Pune.
               </span>
             </div>
             <div className="flex gap-3 pt-2">

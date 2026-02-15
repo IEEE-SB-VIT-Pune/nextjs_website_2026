@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { GradientCard } from "@/components/ui/gradient-card";
 
 import vitLogo from "@/assets/images/vit_logo/vit_logo.png";
+import ieeeLogo from "@/assets/images/footer/ieeeLogo.png";
 import cardGif from "@/assets/images/card/right2_.gif";
 
 import ieeeDay from "@/assets/images/gallery/ieee_Day.jpeg";
@@ -123,21 +124,21 @@ export default function Home() {
                 </h3>
               </div>
               <p className="text-muted-foreground leading-relaxed">
-                The Institute of Electrical and Electronics Engineers (IEEE) is an international organization, which has been the nexus for propagating scientific expertise among people all over the globe. IEEE continues to attract students, faculty and professionals from various fields all around the world and is committed to incorporating diversity in thoughts which is essential for scientific development.
+                IEEE is the world's largest technical professional organization, dedicated to advancing technology for the benefit of humanity. Founded in 1963, it has over 396,000 members in 160 countries. It develops global industry standards (e.g., IEEE 802.11 for Wi-Fi), publishes research, and hosts conferences. 
               </p>
               <div className="flex justify-end">
-                <Image src={cardGif} alt="Tech animation" width={80} height={80} className="h-20 w-20 object-contain" />
+                <Image src={ieeeLogo} alt="IEEE logo" width={100} height={100} className="h-20 w-20 object-contain" />
               </div>
             </div>
             <div className="p-6 rounded-2xl border-4 border-stone-300 bg-card/50 space-y-4 hover:scale-105 transition-all">
               <div>
-                <h3 className="text-xl font-semibold aurora-text mb-4">VIT Pune IEEE Student Branch</h3>
+                <h3 className="text-xl font-semibold aurora-text mb-15">VIT Pune IEEE Student Branch</h3>
               </div>
               <p className="text-muted-foreground leading-relaxed">
-                The Institute of Electrical and Electronics Engineers (IEEE) is an international organization, which has been the nexus for propagating scientific expertise among people all over the globe. IEEE continues to attract students, faculty and professionals from various fields all around the world and is committed to incorporating diversity in thoughts which is essential for scientific development.
+                IEEE Student Branch VIT Pune is the first IEEE division on campus and one of the college's oldest clubs, celebrating 27 years of legacy in 2026. As the original student branch, we bring deep experience, a large community, and a strong track record of impact.
               </p>
               <div className="flex justify-end">
-                <Image src={cardGif} alt="Tech animation" width={80} height={80} className="h-20 w-20 object-contain" />
+                <Image src={cardGif} alt="Tech animation" width={100} height={100} className="h-20 w-20 object-contain" />
               </div>
             </div>
           </div>

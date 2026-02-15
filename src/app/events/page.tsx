@@ -40,7 +40,7 @@ const previousEvents = [
     title: "IEEE Day",
     description:
       "A workshop that demystified the difference between deep learning and machine learning providing practical knowledge to implement in various fields and projects.",
-    url: codegif,
+    url: "",
   },
   {
     id: 5,
@@ -112,7 +112,12 @@ export default function EventsPage() {
               className="group rounded-2xl border-4 border-stone-300 bg-card/50 overflow-hidden hover:scale-105 transition-all"
               >
                 <div className="relative h-40 bg-muted/40">
-                  <Image src={event.url} alt={event.title} fill className="object-cover" />
+                  <Image
+                    src={event.url || eventVector}
+                    alt={event.title}
+                    fill
+                    className="object-cover"
+                  />
                   <div className="absolute top-3 right-3 h-9 w-9 rounded-lg bg-background/70 border border-border/60 flex items-center justify-center">
                     <Image
                       src={index % 2 === 0 ? workshopIcon : ktIcon}

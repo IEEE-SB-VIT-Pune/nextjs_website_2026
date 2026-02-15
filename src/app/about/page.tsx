@@ -203,13 +203,13 @@ export default function AboutPage() {
 
           <div className="space-y-16">
             <div>
-              <h3 className="text-xl font-semibold mb-6">Faculty</h3>
+              <h3 className="text-xl font-semibold mb-6 text-center">Faculty</h3>
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {faculty.map((member) => (
-                  <div key={member.name} className="p-5 rounded-xl border-4 border-stone-300 bg-card/50 hover:scale-105 transition-all">
-                    <div className="flex items-center gap-4">
-                      <Avatar className="h-14 w-14 border border-primary/30">
-                        <AvatarImage src={member.image.src} alt={member.name} />
+                  <div key={member.name} className="p-3 rounded-2xl border-4 border-stone-300 bg-card/50 hover:scale-105 transition-all aspect-square max-w-[240px] w-full mx-auto flex items-center justify-center">
+                    <div className="flex flex-col items-center gap-2 text-center">
+                      <Avatar className="h-24 w-24 border border-primary/30 rounded-md">
+                        <AvatarImage src={member.image.src} alt={member.name} className="object-contain rounded-md" />
                         <AvatarFallback className="bg-primary/10 text-primary">
                           {initialsFromName(member.name)}
                         </AvatarFallback>
@@ -225,14 +225,14 @@ export default function AboutPage() {
             </div>
 
             <div>
-              <h3 className="text-xl font-semibold mb-6">Core 2025-2026</h3>
+              <h3 className="text-xl font-semibold mb-6 text-center">Core 2025-2026</h3>
               <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 {coreTeam.map((member) => {
                   return (
-                    <div key={member.name} className="p-5 rounded-xl border-4 border-stone-300 bg-card/50 hover:scale-105 transition-all">
-                      <div className="flex items-center gap-4">
-                        <Avatar className="h-14 w-14 border border-primary/30">
-                          <AvatarImage src={member.image.src} alt={member.name} />
+                    <div key={member.name} className="p-3 rounded-2xl border-4 border-stone-300 bg-card/50 hover:scale-105 transition-all aspect-square max-w-[240px] w-full mx-auto flex items-center justify-center">
+                      <div className="flex flex-col items-center gap-2 text-center">
+                        <Avatar className="h-24 w-24 border border-primary/30 rounded-md">
+                          <AvatarImage src={member.image.src} alt={member.name} className="object-contain rounded-md" />
                           <AvatarFallback className="bg-primary/10 text-primary">
                             {initialsFromName(member.name)}
                           </AvatarFallback>
@@ -249,15 +249,16 @@ export default function AboutPage() {
             </div>
 
             <div>
-              <h3 className="text-xl font-semibold mb-6">Execom 2025-2026</h3>
+              <h3 className="text-xl font-semibold mb-6 text-center">Execom 2025-2026</h3>
               <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 {execomTeam.map((member) => {
                   return (
-                    <div key={member.name} className="p-6 rounded-xl border-4 border-stone-300 bg-card/50 hover:scale-105 transition-all flex flex-col items-center justify-center text-center">
-                      <Avatar className="h-16 w-16 border border-primary/30 mb-4">
+                    <div key={member.name} className="p-3 rounded-2xl border-4 border-stone-300 bg-card/50 hover:scale-105 transition-all aspect-square max-w-[240px] w-full mx-auto flex flex-col items-center justify-center text-center">
+                      <Avatar className="h-24 w-24 border border-primary/30 mb-3 rounded-md">
                         <AvatarImage
                           src={(execomPhotos[member.photoKey] ?? profilePic).src}
                           alt={member.name}
+                          className="object-contain rounded-md"
                         />
                         <AvatarFallback className="bg-primary/10 text-primary">
                           {initialsFromName(member.name)}
