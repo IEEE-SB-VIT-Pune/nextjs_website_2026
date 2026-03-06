@@ -185,6 +185,7 @@ export default function Home() {
                     <p className="font-bold">₹150</p>
                   </div>
                 </div>
+                
                 <a
                   href="https://learner.vierp.in/"
                   target="_blank"
