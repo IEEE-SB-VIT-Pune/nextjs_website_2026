@@ -1,0 +1,376 @@
+/* Fun Zone Assessment Styles - Scoped under .fun-zone-wrapper */
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap");
+
+.fun-zone-wrapper {
+  --fz-bg-deep: #050505;
+  --fz-grid-line: rgba(0, 255, 255, 0.08);
+  --fz-neon-cyan: #00ffff;
+  --fz-neon-purple: #a855f7;
+  --fz-btn-blue: #1d4ed8;
+  --fz-text-primary: #ffffff;
+  --fz-text-secondary: #94a3b8;
+  --fz-border-white: rgba(255, 255, 255, 0.2);
+  --fz-radius-std: 8px;
+  --fz-radius-pill: 9999px;
+  --fz-glow-cyan: 0 0 15px rgba(0, 255, 255, 0.3);
+  --fz-glow-purple: 0 0 15px rgba(168, 85, 247, 0.3);
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: calc(100vh - 4rem);
+  padding: 20px;
+  font-family: "Plus Jakarta Sans", sans-serif;
+  color: var(--fz-text-primary);
+}
+
+/* 1. CORE CONTAINERS */
+.fun-zone-wrapper .fz-view-container,
+.fun-zone-wrapper .fz-view-container-large {
+  background: rgba(10, 10, 12, 0.95);
+  border: 1px solid var(--fz-text-primary);
+  padding: 40px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  position: relative;
+  box-shadow: 0 0 40px rgba(0, 0, 0, 0.5);
+  border-radius: var(--fz-radius-std);
+}
+
+.fun-zone-wrapper .fz-view-container {
+  max-width: 500px;
+}
+.fun-zone-wrapper .fz-view-container-large {
+  max-width: 1100px;
+  width: 95vw;
+}
+
+.fun-zone-wrapper .fz-view-container::before,
+.fun-zone-wrapper .fz-view-container-large::before {
+  content: "";
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  width: 60px;
+  height: 3px;
+  background: var(--fz-neon-cyan);
+  box-shadow: var(--fz-glow-cyan);
+}
+
+/* 2. TYPOGRAPHY */
+.fun-zone-wrapper .fz-header-section {
+  border-bottom: 1px solid var(--fz-border-white);
+  padding-bottom: 20px;
+}
+
+.fun-zone-wrapper .fz-page-title {
+  font-weight: 800;
+  font-size: 2.2rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--fz-text-primary);
+  text-shadow:
+    2px 0 var(--fz-neon-cyan),
+    -2px 0 var(--fz-neon-purple);
+}
+
+.fun-zone-wrapper .fz-page-subtitle {
+  color: var(--fz-neon-cyan);
+  font-size: 0.9rem;
+  font-family: "JetBrains Mono", monospace;
+  margin-top: 8px;
+}
+
+.fun-zone-wrapper .fz-label-mono {
+  font-family: "JetBrains Mono", monospace;
+  font-weight: 700;
+  font-size: 0.75rem;
+  color: var(--fz-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+/* 3. FORMS & INPUTS */
+.fun-zone-wrapper .fz-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.fun-zone-wrapper .fz-input-sharp {
+  padding: 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--fz-border-white);
+  border-radius: var(--fz-radius-std);
+  color: white;
+  font-family: inherit;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.fun-zone-wrapper .fz-input-sharp:focus {
+  outline: none;
+  border-color: var(--fz-neon-cyan);
+  background: rgba(0, 255, 255, 0.05);
+}
+
+.fun-zone-wrapper .fz-option-prefix-input {
+  background: var(--fz-neon-purple);
+  color: white;
+  padding: 14px;
+  font-family: "JetBrains Mono";
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+}
+
+/* 4. BUTTONS */
+.fun-zone-wrapper .fz-action-row {
+  display: flex;
+  gap: 16px;
+  width: 100%;
+}
+
+.fun-zone-wrapper .fz-btn-industrial,
+.fun-zone-wrapper .fz-btn-industrial-secondary {
+  padding: 14px 28px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  border-radius: var(--fz-radius-std);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: none;
+  flex: 1;
+}
+
+.fun-zone-wrapper .fz-btn-industrial {
+  background: var(--fz-btn-blue);
+  color: white;
+}
+
+.fun-zone-wrapper .fz-btn-industrial:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(29, 78, 216, 0.5);
+}
+
+.fun-zone-wrapper .fz-btn-industrial-secondary {
+  background: transparent;
+  border: 1px solid var(--fz-text-primary);
+  color: white;
+}
+
+.fun-zone-wrapper .fz-btn-industrial-secondary:hover:not(:disabled) {
+  background: white;
+  color: black;
+}
+
+.fun-zone-wrapper .fz-btn-industrial:disabled,
+.fun-zone-wrapper .fz-btn-industrial-secondary:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* 5. QUIZ HUD & READOUTS */
+.fun-zone-wrapper .fz-status-bar {
+  display: flex;
+  justify-content: space-between;
+  padding-bottom: 12px;
+}
+.fun-zone-wrapper .fz-status-value {
+  font-family: "JetBrains Mono";
+  font-size: 1.5rem;
+  color: var(--fz-neon-cyan);
+  font-weight: 700;
+}
+.fun-zone-wrapper .fz-time-critical {
+  color: #ff4444;
+}
+
+.fun-zone-wrapper .fz-progress-track {
+  height: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  width: 100%;
+}
+.fun-zone-wrapper .fz-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--fz-neon-cyan), var(--fz-neon-purple));
+  box-shadow: var(--fz-glow-cyan);
+  transition: width 0.4s ease;
+}
+
+.fun-zone-wrapper .fz-question-display {
+  min-height: 380px;
+  display: flex;
+  flex-direction: column;
+}
+
+.fun-zone-wrapper .fz-question-text {
+  font-size: 1.35rem;
+  font-weight: 700;
+  line-height: 1.5;
+  color: #fff;
+  margin-bottom: 24px;
+}
+
+.fun-zone-wrapper .fz-options-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+/* 6. RESULT SCORECARD */
+.fun-zone-wrapper .fz-score-readout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  text-align: center;
+}
+.fun-zone-wrapper .fz-score-number,
+.fun-zone-wrapper .fz-time-number {
+  font-size: 4rem;
+  font-weight: 800;
+  line-height: 1;
+  margin: 15px 0;
+}
+
+/* 7. ADMIN COMMAND HUB */
+.fun-zone-wrapper .fz-admin-tabs {
+  display: flex;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 4px;
+  border-radius: var(--fz-radius-std);
+  margin-bottom: 24px;
+}
+
+.fun-zone-wrapper .fz-tab-industrial {
+  flex: 1;
+  padding: 12px;
+  background: transparent;
+  border: none;
+  font-family: "JetBrains Mono";
+  font-weight: 700;
+  color: var(--fz-text-secondary);
+  cursor: pointer;
+  border-radius: var(--fz-radius-std);
+  transition: 0.2s;
+}
+
+.fun-zone-wrapper .fz-tab-industrial.active {
+  background: var(--fz-neon-cyan);
+  color: #000;
+}
+
+.fun-zone-wrapper .fz-dashboard-panel {
+  scrollbar-width: thin;
+  scrollbar-color: var(--fz-neon-cyan) transparent;
+}
+
+.fun-zone-wrapper .fz-dashboard-panel::-webkit-scrollbar {
+  width: 4px;
+}
+.fun-zone-wrapper .fz-dashboard-panel::-webkit-scrollbar-track {
+  background: transparent;
+}
+.fun-zone-wrapper .fz-dashboard-panel::-webkit-scrollbar-thumb {
+  background: var(--fz-neon-cyan);
+  border-radius: 10px;
+}
+
+.fun-zone-wrapper .fz-table-industrial {
+  width: 100%;
+  border-collapse: collapse;
+}
+.fun-zone-wrapper .fz-table-industrial th {
+  text-align: left;
+  font-family: "JetBrains Mono";
+  font-size: 0.7rem;
+  color: var(--fz-text-secondary);
+  padding: 12px;
+  border-bottom: 1px solid var(--fz-text-primary);
+}
+.fun-zone-wrapper .fz-table-industrial td {
+  padding: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.fun-zone-wrapper .fz-row-hidden {
+  opacity: 0.4;
+  filter: grayscale(1);
+}
+.fun-zone-wrapper .fz-text-strike {
+  text-decoration: line-through;
+}
+
+.fun-zone-wrapper .fz-badge-industrial {
+  font-family: "JetBrains Mono";
+  font-size: 0.6rem;
+  padding: 2px 8px;
+  border-radius: 4px;
+  margin-right: 8px;
+  text-transform: uppercase;
+  font-weight: 900;
+  letter-spacing: 1px;
+}
+
+.fun-zone-wrapper .fz-badge-active {
+  background: var(--fz-neon-cyan);
+  color: #000;
+}
+.fun-zone-wrapper .fz-badge-hidden {
+  background: var(--fz-neon-purple);
+  color: #fff;
+}
+
+.fun-zone-wrapper .fz-operations-cell .fz-btn-small {
+  background: transparent;
+  border: 1px solid var(--fz-border-white);
+  padding: 4px 8px;
+  cursor: pointer;
+  color: white;
+  font-family: "JetBrains Mono";
+  font-size: 0.7rem;
+  border-radius: 4px;
+  transition: 0.2s;
+}
+
+.fun-zone-wrapper .fz-operations-cell .fz-btn-small:hover {
+  background: var(--fz-neon-cyan);
+  color: #000;
+  border-color: var(--fz-neon-cyan);
+}
+
+/* 8. ANIMATIONS & RESPONSIVE */
+.fun-zone-wrapper .fz-animate-fade-in {
+  animation: fzFadeIn 0.4s ease-out;
+}
+@keyframes fzFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 768px) {
+  .fun-zone-wrapper .fz-options-grid {
+    grid-template-columns: 1fr;
+  }
+  .fun-zone-wrapper .fz-score-readout {
+    grid-template-columns: 1fr;
+  }
+  .fun-zone-wrapper .fz-dashboard-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .fun-zone-wrapper .fz-view-container-large {
+    padding: 24px;
+  }
+  .fun-zone-wrapper .fz-action-row {
+    flex-direction: column;
+  }
+}
