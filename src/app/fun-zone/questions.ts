@@ -9,143 +9,257 @@ export interface Question {
 const questions: Question[] = [
   {
     id: 1,
-    text: "What does CPU stand for?",
+    text: `Predict the Output:
+\`\`\`cpp
+#include<iostream>
+using namespace std;
+
+int main() {
+    int x = 4;
+    for(int i = 0; i < 3; i++) {
+        x = x + i;
+    }
+    cout << x;
+}
+\`\`\``,
     type: "mcq",
-    options: [
-      "Central Processing Unit",
-      "Computer Personal Unit",
-      "Central Program Utility",
-      "Computer Processing Unit",
-    ],
-    answer: "Central Processing Unit",
+    options: ["7", "6", "5", "4"],
+    answer: "7",
   },
   {
     id: 2,
-    text: "Which device is used to type on a computer?",
+    text: `Debug the Code: This program should calculate the sum of array elements but produces wrong result. Identify the mistake:
+\`\`\`cpp
+int arr[4] = {2,4,6,8};
+int sum = 0;
+
+for(int i = 0; i < 4; i++) {
+    sum = arr[i];
+}
+cout << sum;
+\`\`\``,
     type: "mcq",
-    options: ["Mouse", "Monitor", "Keyboard", "Speaker"],
-    answer: "Keyboard",
+    options: [
+      "sum += arr[i];",
+      "sum = sum + i;",
+      "sum = arr[i] + 1;",
+      "sum = arr[0];",
+    ],
+    answer: "sum += arr[i];",
   },
   {
     id: 3,
-    text: "What does 'www' stand for in a website address?",
+    text: `Fill in the blank to correctly determine whether a number is prime:
+\`\`\`cpp
+bool prime = true;
+
+for(int i = 2; i < n; i++) {
+    if(n % i == 0) {
+        prime = ______;
+        break;
+    }
+}
+\`\`\``,
     type: "mcq",
-    options: [
-      "World Wide Web",
-      "Wide World Web",
-      "Web World Wide",
-      "World Web Wide",
-    ],
-    answer: "World Wide Web",
+    options: ["true", "false", "0", "break"],
+    answer: "false",
   },
   {
     id: 4,
-    text: "Which of these is a web browser?",
+    text: `Predict the Output:
+\`\`\`cpp
+int a = 5;
+int b = 10;
+
+swap(a, b);
+
+cout << a << " " << b;
+\`\`\``,
     type: "mcq",
-    options: ["Excel", "Google Chrome", "Photoshop", "PowerPoint"],
-    answer: "Google Chrome",
+    options: ["5 10", "10 5", "Error", "0 0"],
+    answer: "10 5",
   },
   {
     id: 5,
-    text: "What symbol is used in every email address?",
+    text: `Loop Analysis: How many times will the following loop execute?
+\`\`\`cpp
+for(int i = 1; i <= 100; i *= 2) {
+    cout << i << " ";
+}
+\`\`\``,
     type: "mcq",
-    options: ["#", "&", "@", "$"],
-    answer: "@",
+    options: ["5", "6", "7", "8"],
+    answer: "7",
   },
   {
     id: 6,
-    text: "What does PDF stand for?",
+    text: `Predict the Output (Tricky):
+\`\`\`cpp
+int x = 5;
+
+cout << x++ + ++x;
+\`\`\``,
     type: "mcq",
-    options: [
-      "Portable Document Format",
-      "Personal Data File",
-      "Printed Document File",
-      "Public Document Format",
-    ],
-    answer: "Portable Document Format",
+    options: ["10", "11", "12", "Undefined Behavior"],
+    answer: "Undefined Behavior",
   },
   {
     id: 7,
-    text: "Which key do you press to make a letter uppercase?",
+    text: `Debug the Code: This code attempts to find the maximum element. Why can it fail for certain inputs?
+\`\`\`cpp
+int arr[5] = {2,8,1,9,4};
+int mx = 0;
+
+for(int i = 0; i < 5; i++) {
+    if(arr[i] > mx)
+        mx = arr[i];
+}
+cout << mx;
+\`\`\``,
     type: "mcq",
-    options: ["Tab", "Ctrl", "Shift", "Alt"],
-    answer: "Shift",
+    options: [
+      "mx should be initialized as arr[0]",
+      "Loop condition is incorrect",
+      "Array size is incorrect",
+      "Comparison operator is incorrect",
+    ],
+    answer: "mx should be initialized as arr[0]",
   },
   {
     id: 8,
-    text: "What does Wi-Fi allow you to do?",
+    text: `Fill in the blank to reverse an array:
+\`\`\`cpp
+for(int i = 0; i < n/2; i++) {
+    ______(arr[i], arr[n-i-1]);
+}
+\`\`\``,
     type: "mcq",
-    options: [
-      "Print documents",
-      "Connect to the internet wirelessly",
-      "Charge your phone",
-      "Take screenshots",
-    ],
-    answer: "Connect to the internet wirelessly",
+    options: ["change", "swap", "reverse", "flip"],
+    answer: "swap",
   },
   {
     id: 9,
-    text: "Which company created the iPhone?",
+    text: `Predict the Output:
+\`\`\`cpp
+int arr[] = {1,3,5,7};
+
+cout << sizeof(arr)/sizeof(arr[0]);
+\`\`\``,
     type: "mcq",
-    options: ["Samsung", "Google", "Apple", "Microsoft"],
-    answer: "Apple",
+    options: ["3", "4", "5", "Error"],
+    answer: "4",
   },
   {
     id: 10,
-    text: "What does USB stand for?",
+    text: `What is the time complexity of this code?
+\`\`\`cpp
+for(int i = 0; i < n; i++) {
+    for(int j = 0; j < n; j++) {
+        cout << i + j;
+    }
+}
+\`\`\``,
     type: "mcq",
-    options: [
-      "Universal Serial Bus",
-      "Ultra Speed Bandwidth",
-      "Unified System Bridge",
-      "Universal System Backup",
-    ],
-    answer: "Universal Serial Bus",
+    options: ["O(n)", "O(n log n)", "O(n²)", "O(log n)"],
+    answer: "O(n²)",
   },
   {
     id: 11,
-    text: "What is the shortcut to copy something on a computer?",
+    text: `Predict the Output:
+\`\`\`cpp
+#include <algorithm>
+#include <string>
+using namespace std;
+
+string s = "code";
+
+reverse(s.begin(), s.end());
+
+cout << s;
+\`\`\``,
     type: "mcq",
-    options: ["Ctrl + V", "Ctrl + Z", "Ctrl + C", "Ctrl + X"],
-    answer: "Ctrl + C",
+    options: ["code", "edoc", "error", "edoC"],
+    answer: "edoc",
   },
   {
     id: 12,
-    text: "Which of these is a social media platform?",
+    text: `Predict the Output:
+\`\`\`cpp
+#include <iostream>
+using namespace std;
+
+int main() {
+    int a = 10;
+    int b = 5;
+    cout << a / b * 2;
+}
+\`\`\``,
     type: "mcq",
-    options: ["Windows", "Instagram", "Linux", "Excel"],
-    answer: "Instagram",
+    options: ["1", "4", "5", "10"],
+    answer: "4",
   },
   {
     id: 13,
-    text: "What does GPS stand for?",
+    text: `Predict the Output:
+\`\`\`cpp
+#include <iostream>
+using namespace std;
+
+int main() {
+    int x = 5;
+    cout << x++ << " " << ++x;
+}
+\`\`\``,
     type: "mcq",
-    options: [
-      "Global Positioning System",
-      "General Processing System",
-      "Global Program Software",
-      "Geographic Position Service",
-    ],
-    answer: "Global Positioning System",
+    options: ["5 6", "5 7", "6 7", "6 6"],
+    answer: "5 7",
   },
   {
     id: 14,
-    text: "Which of these stores data permanently on a computer?",
+    text: `What is the time complexity?
+\`\`\`cpp
+for(int i = 1; i < n; i *= 2) {
+    cout << i;
+}
+\`\`\``,
     type: "mcq",
-    options: ["RAM", "Hard Drive", "CPU", "Monitor"],
-    answer: "Hard Drive",
+    options: ["O(n)", "O(log n)", "O(n²)", "O(1)"],
+    answer: "O(log n)",
   },
   {
     id: 15,
-    text: "What is Google primarily known as?",
+    text: `Predict the Output:
+\`\`\`cpp
+#include <iostream>
+using namespace std;
+
+int main() {
+    int arr[3] = {10,20,30};
+    cout << arr[1];
+}
+\`\`\``,
     type: "mcq",
-    options: [
-      "A video game",
-      "A search engine",
-      "An operating system",
-      "A programming language",
-    ],
-    answer: "A search engine",
+    options: ["10", "20", "30", "Error"],
+    answer: "20",
+  },
+  {
+    id: 16,
+    text: `Predict the Output:
+\`\`\`cpp
+#include <iostream>
+using namespace std;
+
+int main() {
+    int x = 3;
+    if(x = 5)
+        cout << "Hello";
+    else
+        cout << "World";
+}
+\`\`\``,
+    type: "mcq",
+    options: ["Hello", "World", "Error", "Nothing"],
+    answer: "Hello",
   },
 ];
 

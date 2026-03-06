@@ -5,6 +5,45 @@ import { useRouter } from "next/navigation";
 import { useFunZone } from "../FunZoneContext";
 import { getShuffledQuestions, type Question } from "../questions";
 
+// Render question text with code blocks
+function renderQuestionText(text: string) {
+  const parts = text.split(/(```[\s\S]*?```)/g);
+  return parts.map((part, idx) => {
+    if (part.startsWith("```")) {
+      // Extract code content (remove ``` and language identifier)
+      const lines = part.slice(3, -3).split("\n");
+      const lang = lines[0].trim();
+      const code = lines.slice(lang ? 1 : 0).join("\n").trim();
+      return (
+        <pre
+          key={idx}
+          style={{
+            background: "rgba(0, 0, 0, 0.6)",
+            border: "1px solid var(--fz-neon-cyan)",
+            borderRadius: "8px",
+            padding: "16px",
+            margin: "12px 0",
+            overflowX: "auto",
+            fontSize: "0.9rem",
+            lineHeight: "1.5",
+          }}
+        >
+          <code style={{ fontFamily: "'JetBrains Mono', 'Fira Code', monospace", color: "#e2e8f0" }}>
+            {code}
+          </code>
+        </pre>
+      );
+    }
+    // Regular text - split by newlines
+    return part.split("\n").map((line, i) => (
+      <span key={`${idx}-${i}`}>
+        {line}
+        {i < part.split("\n").length - 1 && <br />}
+      </span>
+    ));
+  });
+}
+
 export default function QuizPage() {
   const router = useRouter();
   const { playerName, setScoreData } = useFunZone();
@@ -108,7 +147,7 @@ export default function QuizPage() {
         {/* Question Area */}
         <div className="fz-question-display">
           <div className="fz-question-text" style={{ fontSize: "1.1rem", marginBottom: "20px" }}>
-            {q.text}
+            {renderQuestionText(q.text)}
           </div>
 
           <div className="fz-options-grid" style={{ display: "grid", gap: "12px" }}>
