@@ -4,7 +4,7 @@ import "./globals.css";
 import Navbar from "@/components/layout/navbar";
 import Footer from "@/components/layout/footer";
 import MagneticCursor from "@/components/ui/magnetic-cursor";
-import { Particles } from "@/components/ui/particles";
+import TsParticlesBackground from "@/components/ui/tsparticles-background";
 import { ScrollToTop } from "@/components/ui/scroll-to-top";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -35,14 +35,7 @@ export default function RootLayout({
     <html lang="en" className="dark" suppressHydrationWarning>
       <body className={`${inter.className} ${poppins.variable} ${ibmPlexMono.variable} antialiased min-h-screen flex flex-col has-magnetic-cursor`}>
         <ScrollToTop />
-        <Particles 
-          className="fixed inset-0 -z-10" 
-          quantity={80}
-          staticity={50}
-          ease={50}
-          size={0.4}
-          color="#ffffff"
-        />
+        <TsParticlesBackground />
         <Navbar />
         <main className="flex-1 pt-16">
           {children}

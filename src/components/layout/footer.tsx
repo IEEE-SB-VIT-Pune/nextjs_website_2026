@@ -1,5 +1,7 @@
 import Link from "next/link";
-import { Zap, Linkedin, Instagram, Mail, MapPin, Youtube } from "lucide-react";
+import Image from "next/image";
+import { Linkedin, Instagram, Mail, MapPin, Youtube } from "lucide-react";
+import ieeeLogo from "@/assets/images/footer/IEEE_logo2.png";
 
 const Footer = () => {
   return (
@@ -9,8 +11,14 @@ const Footer = () => {
           {/* Brand */}
           <div className="space-y-4">
             <div className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 border border-primary/20">
-                <Zap className="h-4 w-4 text-primary" />
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 border border-primary/20 p-1">
+                <Image
+                  src={ieeeLogo}
+                  alt="IEEE logo"
+                  width={28}
+                  height={28}
+                  className="h-full w-full object-contain"
+                />
               </div>
               <span className="text-lg font-bold">
                 <span className="text-primary">IEEE</span> Student Branch
@@ -33,6 +41,9 @@ const Footer = () => {
               </Link>
               <Link href="/about" className="text-sm text-muted-foreground hover:text-primary transition-colors">
                 About Us
+              </Link>
+              <Link href="/contributors" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                Contributors
               </Link>
               <Link href="/activities" className="text-sm text-muted-foreground hover:text-primary transition-colors">
                 Activities
@@ -82,8 +93,14 @@ const Footer = () => {
           </div>
         </div>
 
-        <div className="mt-10 pt-6 border-t border-border/50 text-center text-xs text-muted-foreground">
-          © {new Date().getFullYear()} IEEE Student Branch. All rights reserved.
+        <div className="mt-10 pt-6 border-t border-border/50 text-center text-xs text-muted-foreground space-y-1">
+          <p>© {new Date().getFullYear()} IEEE Student Branch. All rights reserved.</p>
+          <p>
+            Made with &lt;3 by{" "}
+            <Link href="/contributors" className="text-primary hover:underline">
+              Web Team
+            </Link>
+          </p>
         </div>
       </div>
     </footer>

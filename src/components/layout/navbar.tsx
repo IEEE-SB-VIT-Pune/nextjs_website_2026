@@ -9,7 +9,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import ScrambleHover from "@/components/ui/scramble-hover";
 
-import vitLogo from "@/assets/images/vit_logo/vit_logo.png";
+import ieeeLogo from "@/assets/images/footer/IEEE_logo2.png";
 
 const navLinks = [
   { label: "Home", path: "/" },
@@ -25,22 +25,21 @@ const Navbar = () => {
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
-      <div className="w-full flex h-16 items-center justify-start px-0">
+      <div className="w-full flex h-16 items-center justify-start px-4 sm:px-6">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-3 group">
           <div className="flex items-center gap-2">
-            <div className="h-12 w-12 rounded-lg bg-card/60 p-1">
+            <div className="h-14 w-14 rounded-lg bg-card/60 p-1">
               <Image
-                src={vitLogo}
-                alt="VIT Pune logo"
-                width={40}
-                height={40}
+                src={ieeeLogo}
+                alt="IEEE logo"
+                width={48}
+                height={48}
                 className="h-full w-full object-contain"
               />
             </div>
           </div>
           <span className="text-lg font-bold tracking-tight hidden sm:inline">
-            <span className="text-primary">IEEE</span>{" "}
             <span className="text-foreground">Student Branch</span>
           </span>
         </Link>
