@@ -20,12 +20,17 @@ const interviewFormSchema = z.object({
   phone_number: z.string().min(10, "WhatsApp number must be at least 10 digits").trim(),
   branch: z.string().min(1, "Branch selection is required"),
   whyPart: z.string().min(1, "Motivation field is required").trim(),
-  domain: z.array(z.string()).min(1, "Select at least one domain preference"),
+  domain: z
+    .array(z.string())
+    .min(1, "Select at least one domain preference")
+    .max(3, "You can select a maximum of 3 domains"),
   whyWork: z.string().min(1, "Please answer this required field").trim(),
   skills: z.string().min(1, "Skills lists are required").trim(),
   projects: z.string(),
   expectations: z.string(),
   vagera: z.string(),
+  github: z.string(),
+  linkedin: z.string(),
 });
 
 type InterviewFormValues = z.infer<typeof interviewFormSchema>;
@@ -95,6 +100,8 @@ export default function RecruitmentPage() {
       projects: "",
       expectations: "",
       vagera: "",
+      github: "",
+      linkedin: "",
     },
   });
 
@@ -461,10 +468,40 @@ export default function RecruitmentPage() {
                 </div>
 
                 <div className="space-y-1.5">
+                  <Label htmlFor="github">GitHub Profile Link (Optional)</Label>
+                  <Input
+                    id="github"
+                    type="url"
+                    placeholder="https://github.com/username"
+                    error={!!errors.github}
+                    disabled={applyLoading}
+                    {...register("github")}
+                  />
+                  {errors.github && (
+                    <p className="text-xs font-semibold text-destructive">{errors.github.message}</p>
+                  )}
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="linkedin">LinkedIn Profile Link (Optional)</Label>
+                  <Input
+                    id="linkedin"
+                    type="url"
+                    placeholder="https://linkedin.com/in/username"
+                    error={!!errors.linkedin}
+                    disabled={applyLoading}
+                    {...register("linkedin")}
+                  />
+                  {errors.linkedin && (
+                    <p className="text-xs font-semibold text-destructive">{errors.linkedin.message}</p>
+                  )}
+                </div>
+
+                <div className="space-y-1.5">
                   <Label htmlFor="branch">Branch</Label>
                   <select
                     id="branch"
-                    className="flex h-10 w-full rounded-md border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
+                    className="flex h-13 w-full rounded-md border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
                     disabled={applyLoading}
                     {...register("branch")}
                   >
@@ -486,19 +523,59 @@ export default function RecruitmentPage() {
                 2. Domains of Interest
               </div>
               <div className="space-y-2">
+                <p
+                  className={`text-xs ${selectedDomains.length === 3
+                      ? "text-amber-500 font-medium"
+                      : "text-muted-foreground"
+                    }`}
+                >
+                  You can select up to 3 domains. ({selectedDomains.length}/3 selected)
+                </p>
                 <Label>Select domains you are interested in (Multiple allowed)</Label>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3 bg-card/25 p-3 rounded-lg border border-border/40">
-                  {["Technical", "Management & PR", "Video Editing", "Graphic Design & Aesthetics", "Content and Social Media", "Finance", "Sponsorship and Curation"].map((domain) => (
+                  {[
+                    "Aesthetic",
+                    "Content",
+                    "Curation",
+                    "Finance",
+                    "Graphics",
+                    "Management",
+                    "PR & SM",
+                    "Sponsorship",
+                    "Technical",
+                    "Video Editing"
+                  ].map((domain) => (
                     <div key={domain} className="flex items-center space-x-2">
                       <Checkbox
                         id={`domain-${domain}`}
                         checked={selectedDomains.includes(domain)}
+                        disabled={
+
+                          applyLoading ||
+
+                          (!selectedDomains.includes(domain) && selectedDomains.length >= 3)
+
+                        }
                         onChange={(e: any) => {
                           const checked = e.target.checked;
+
                           if (checked) {
-                            setValue("domain", [...selectedDomains, domain]);
+                            // Prevent selecting more than 3
+                            if (selectedDomains.length >= 3) {
+                              return;
+                            }
+
+                            setValue("domain", [...selectedDomains, domain], {
+                              shouldValidate: true,
+                            });
                           } else {
-                            setValue("domain", selectedDomains.filter((d) => d !== domain));
+                            setValue(
+                              "domain",
+                              selectedDomains.filter((d) => d !== domain),
+                              {
+                                shouldValidate: true,
+                              }
+                            );
                           }
                         }}
                       />
@@ -709,13 +786,12 @@ export default function RecruitmentPage() {
                                   key={s.id}
                                   onClick={() => setSelectedSlotId(s.id)}
                                   disabled={s.isFull || bookingLoading}
-                                  className={`p-3.5 border rounded-lg text-left transition-all relative ${
-                                    s.isFull
-                                      ? "border-border opacity-40 cursor-not-allowed bg-muted/5"
-                                      : selectedSlotId === s.id
+                                  className={`p-3.5 border rounded-lg text-left transition-all relative ${s.isFull
+                                    ? "border-border opacity-40 cursor-not-allowed bg-muted/5"
+                                    : selectedSlotId === s.id
                                       ? "border-primary bg-primary/10 ring-2 ring-primary/20 text-foreground"
                                       : "border-border/80 hover:border-primary/50 text-foreground"
-                                  }`}
+                                    }`}
                                 >
                                   <div className="font-bold text-sm">
                                     {formatTimeStr(s.dateTime)} - {formatTimeStr(s.endDateTime)}

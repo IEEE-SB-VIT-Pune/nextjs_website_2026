@@ -296,11 +296,11 @@ export async function initializeResponseSheetHeaders() {
 
     if (!response.data.values || response.data.values.length === 0) {
       const headers = [
-        "Timestamp", "Name", "Email", "Phone", "Branch", "Domain preferences", "Why join IEEE", "Why work in domains", "Skills", "Projects", "Expectations", "Extra Details"
+        "Timestamp", "Name", "Email", "Phone", "GitHub Profile", "LinkedIn Profile", "Branch", "Domain preferences", "Why join IEEE", "Why work in domains", "Skills", "Projects", "Expectations", "Extra Details"
       ];
       await sheets.spreadsheets.values.update({
         spreadsheetId,
-        range: "Sheet1!A1:L1",
+        range: "Sheet1!A1:N1",
         valueInputOption: "RAW",
         requestBody: { values: [headers] }
       });
@@ -316,6 +316,8 @@ export async function logResponseToGoogleSheet(application: {
   fullname: string;
   email: string;
   phone_number: string;
+  github?: string;
+  linkedin?: string;
   branch: string;
   whyPart: string;
   domain: string[];
@@ -335,7 +337,7 @@ export async function logResponseToGoogleSheet(application: {
     // First, ensure headers are initialized
     await initializeResponseSheetHeaders();
 
-    const range = "Sheet1!A:L";
+    const range = "Sheet1!A:N";
     const timestamp = new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" });
 
     const values = [[
@@ -343,6 +345,8 @@ export async function logResponseToGoogleSheet(application: {
       application.fullname,
       application.email,
       application.phone_number,
+      application.github || "",
+      application.linkedin || "",
       application.branch,
       application.domain.join(", "),
       application.whyPart,

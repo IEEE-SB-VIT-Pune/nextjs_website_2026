@@ -18,6 +18,8 @@ const recruitmentFormSchema = z.object({
   projects: z.string().optional().default(""),
   expectations: z.string().optional().default(""),
   vagera: z.string().optional().default(""),
+  github: z.string().optional().default(""),
+  linkedin: z.string().optional().default(""),
 });
 
 export async function POST(request: Request) {
@@ -76,6 +78,8 @@ export async function POST(request: Request) {
         fullname: validation.data.fullname,
         email: user.email,
         phone_number: validation.data.phone_number,
+        github: validation.data.github,
+        linkedin: validation.data.linkedin,
         branch: validation.data.branch,
         whyPart: validation.data.whyPart,
         domain: validation.data.domain,

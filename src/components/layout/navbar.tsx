@@ -23,7 +23,6 @@ const baseLinks = [
   { label: "About Us", path: "/about" },
   { label: "Activities", path: "/activities" },
   { label: "Events", path: "/events" },
-  { label: "Fun Zone", path: "/fun-zone" },
 ];
 
 const Navbar = () => {

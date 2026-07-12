@@ -16,6 +16,8 @@ interface ApplicantDetails {
   fullname: string;
   email: string;
   phone_number: string;
+  github?: string;
+  linkedin?: string;
   branch: string;
   domain: string[];
   createdAt: string;
@@ -558,6 +560,16 @@ export default function DashboardPage() {
                               <p className="font-bold text-foreground">{app.fullname}</p>
                               <p className="text-[10px] text-muted-foreground">{app.email}</p>
                               <p className="text-[9px] text-primary mt-0.5">{app.phone_number}</p>
+                              {app.github && (
+                                <p className="text-[10px] text-muted-foreground mt-1">
+                                  GitHub: <a href={app.github.startsWith("http") ? app.github : `https://${app.github}`} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">{app.github}</a>
+                                </p>
+                              )}
+                              {app.linkedin && (
+                                <p className="text-[10px] text-muted-foreground mt-0.5">
+                                  LinkedIn: <a href={app.linkedin.startsWith("http") ? app.linkedin : `https://${app.linkedin}`} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">{app.linkedin}</a>
+                                </p>
+                              )}
                             </td>
                             <td className="p-3 font-medium text-foreground">{app.branch}</td>
                             <td className="p-3">
