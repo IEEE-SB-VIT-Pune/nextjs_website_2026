@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { motion } from "framer-motion";
 
 import codegif from "@/assets/images/events/eventPage_Animation/code.gif";
@@ -15,54 +16,68 @@ import ktIcon from "@/assets/images/events/icons/KT.png";
 
 
 const previousEvents = [
+  // {
+  //   id: 1,
+  //   title: "CodeZest",
+  //   description:
+  //     "An exciting coding event, a brain game that tests the programmer's problem solving skills. Not just a ambitious coding competion alone but also an but along an interactive session with an expert in the domain.",
+  //   url: codegif,
+  // },
+  // {
+  //   id: 2,
+  //   title: "Neural Network Bootcamp",
+  //   description:
+  //     "A workshop that demystified the difference between deep learning and machine learning providing practical knowledge to implement in various fields and projects.",
+  //   url: neural,
+  // },
+  // {
+  //   id: 3,
+  //   title: "Avenir",
+  //   description:
+  //     "A workshop that demystified the difference between deep learning and machine learning providing practical knowledge to implement in various fields and projects.",
+  //   url: webdevgif,
+  // },
+  // {
+  //   id: 4,
+  //   title: "IEEE Day",
+  //   description:
+  //     "A workshop that demystified the difference between deep learning and machine learning providing practical knowledge to implement in various fields and projects.",
+  //   url: "",
+  // },
+  // {
+  //   id: 5,
+  //   title: "Blockchain",
+  //   description:
+  //     "A workshop that demystified the difference between deep learning and machine learning providing practical knowledge to implement in various fields and projects.",
+  //   url: blockchain,
+  // },
+  // {
+  //   id: 6,
+  //   title: "Python Workshop",
+  //   description:
+  //     "A workshop that demystified the difference between deep learning and machine learning providing practical knowledge to implement in various fields and projects.",
+  //   url: python,
+  // },
+  // {
+  //   id: 7,
+  //   title: "Quantum Computing",
+  //   description:
+  //     "A workshop that demystified the difference between deep learning and machine learning providing practical knowledge to implement in various fields and projects.",
+  //   url: quantum,
+  // },
   {
-    id: 1,
-    title: "CodeZest",
+    id: 8,
+    title: "CodeZest'26",
     description:
-      "An exciting coding event, a brain game that tests the programmer's problem solving skills. Not just a ambitious coding competion alone but also an but along an interactive session with an expert in the domain.",
+      "A high-octane competitive coding hackathon challenging logic and speed across multiple divisions, held offline at VIT Pune.",
     url: codegif,
   },
   {
-    id: 2,
-    title: "Neural Network Bootcamp",
+    id: 9,
+    title: "Gate Smashers — Varun Singla",
     description:
-      "A workshop that demystified the difference between deep learning and machine learning providing practical knowledge to implement in various fields and projects.",
-    url: neural,
-  },
-  {
-    id: 3,
-    title: "Avenir",
-    description:
-      "A workshop that demystified the difference between deep learning and machine learning providing practical knowledge to implement in various fields and projects.",
-    url: webdevgif,
-  },
-  {
-    id: 4,
-    title: "IEEE Day",
-    description:
-      "A workshop that demystified the difference between deep learning and machine learning providing practical knowledge to implement in various fields and projects.",
+      "An interactive tech talk with Varun Singla, founder of Gate Smashers, covering core CS subjects, AI integration, and core career skills.",
     url: "",
-  },
-  {
-    id: 5,
-    title: "Blockchain",
-    description:
-      "A workshop that demystified the difference between deep learning and machine learning providing practical knowledge to implement in various fields and projects.",
-    url: blockchain,
-  },
-  {
-    id: 6,
-    title: "Python Workshop",
-    description:
-      "A workshop that demystified the difference between deep learning and machine learning providing practical knowledge to implement in various fields and projects.",
-    url: python,
-  },
-  {
-    id: 7,
-    title: "Quantum Computing",
-    description:
-      "A workshop that demystified the difference between deep learning and machine learning providing practical knowledge to implement in various fields and projects.",
-    url: quantum,
   },
 ];
 
@@ -111,114 +126,43 @@ export default function EventsPage() {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
-            {/* CodeZest'26 */}
+          <div className="grid gap-8 max-w-2xl mx-auto">
+            {/* Execom Recruitment 2026-2027 */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="rounded-2xl border-4 border-stone-300 bg-card/50 overflow-hidden hover:scale-105 transition-all"
+              className="rounded-2xl border-4 border-stone-300 bg-card/50 overflow-hidden hover:scale-105 transition-all w-full"
             >
               <div className="p-6 space-y-4">
                 <div className="flex items-center gap-3">
-                  <span className="px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold uppercase tracking-wider">Hackathon</span>
-                  <span className="px-3 py-1 rounded-full bg-green-500/10 text-green-400 text-xs font-bold">Offline</span>
+                  <span className="px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold uppercase tracking-wider">Recruitment</span>
+                  <span className="px-3 py-1 rounded-full bg-green-500/10 text-green-400 text-xs font-bold">Online / Interview</span>
                 </div>
-                <h3 className="text-2xl font-bold">CodeZest&apos;26</h3>
+                <h3 className="text-2xl font-bold">IEEE Execom Recruitment 2026-2027</h3>
                 <p className="text-muted-foreground text-sm leading-relaxed">
-                  A competitive coding hackathon designed to challenge your logic, speed, and problem-solving skills. Compete across Junior &amp; Senior divisions!
+                  Join the Executive Committee (Execom) of the IEEE Student Branch VIT Pune! This is your opportunity to lead, manage, and contribute to one of the oldest and most prestigious technical student organizations on campus.
                 </p>
-                <div className="space-y-2 text-sm text-muted-foreground">
-                  <p>✨ Certificates for all participants</p>
-                  <p>✨ Network with fellow coders</p>
-                  <p>✨ Offline coding environment</p>
+                <div className="space-y-2 text-sm text-muted-foreground font-mono text-xs">
+                  <p>✨ Open domains: Technical (Web, App, AI/ML, Coding, Cyber, IoT), Research, Curation, Sponsorship, Multimedia &amp; PR</p>
+                  <p>✨ Develop leadership, teamwork, and project development skills</p>
+                  <p>✨ Exclusive network and mentorship opportunities</p>
                 </div>
                 <div className="grid grid-cols-2 gap-3 text-sm">
                   <div className="p-3 rounded-lg bg-muted/30 border border-border/50">
-                    <p className="text-muted-foreground text-xs">Prize Pool</p>
-                    <p className="font-bold text-primary">₹30,000</p>
+                    <p className="text-muted-foreground text-xs">Eligible Batches</p>
+                    <p className="font-bold text-primary">All Students</p>
                   </div>
                   <div className="p-3 rounded-lg bg-muted/30 border border-border/50">
-                    <p className="text-muted-foreground text-xs">Team Size</p>
-                    <p className="font-bold">1–2 Members</p>
-                  </div>
-                  <div className="p-3 rounded-lg bg-muted/30 border border-border/50">
-                    <p className="text-muted-foreground text-xs">Entry Fee</p>
-                    <p className="font-bold">₹150 / team</p>
-                  </div>
-                  <div className="p-3 rounded-lg bg-muted/30 border border-border/50">
-                    <p className="text-muted-foreground text-xs">Venue</p>
-                    <p className="font-bold text-xs">VIT Pune</p>
+                    <p className="text-muted-foreground text-xs">Process</p>
+                    <p className="font-bold">{"Form -> Interview"}</p>
                   </div>
                 </div>
-                <h4 className="font-semibold text-sm">🏆 Prize Breakdown (per division)</h4>
-                <div className="grid grid-cols-3 gap-2 text-sm">
-                  <div className="p-2 rounded-lg bg-yellow-500/10 border border-yellow-500/20 text-center">
-                    <p className="text-yellow-400 font-bold">₹7,000</p>
-                    <p className="text-muted-foreground text-xs">Winner</p>
-                  </div>
-                  <div className="p-2 rounded-lg bg-gray-400/10 border border-gray-400/20 text-center">
-                    <p className="text-gray-300 font-bold">₹5,000</p>
-                    <p className="text-muted-foreground text-xs">1st Runner-up</p>
-                  </div>
-                  <div className="p-2 rounded-lg bg-amber-600/10 border border-amber-600/20 text-center">
-                    <p className="text-amber-500 font-bold">₹3,000</p>
-                    <p className="text-muted-foreground text-xs">2nd Runner-up</p>
-                  </div>
-                </div>
-                <a href="https://learner.vierp.in/" target="_blank" rel="noopener noreferrer">
-                  <button className="w-full mt-2 px-6 py-3 rounded-lg bg-primary text-primary-foreground font-semibold hover:opacity-90 transition-opacity">
-                    Register Now →
+                <Link href="/recruitment" className="block w-full">
+                  <button className="w-full mt-2 px-6 py-3 rounded-lg bg-primary text-black font-semibold hover:opacity-90 transition-opacity">
+                    Apply Now 🚀
                   </button>
-                </a>
-              </div>
-            </motion.div>
-
-            {/* Gate Smashers Tech Talk */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.1 }}
-              className="rounded-2xl border-4 border-stone-300 bg-card/50 overflow-hidden hover:scale-105 transition-all"
-            >
-              <div className="p-6 space-y-4">
-                <div className="flex items-center gap-3">
-                  <span className="px-3 py-1 rounded-full bg-purple-500/10 text-purple-400 text-xs font-bold uppercase tracking-wider">Tech Talk</span>
-                  <span className="px-3 py-1 rounded-full bg-green-500/10 text-green-400 text-xs font-bold">13th March · 1 PM</span>
-                </div>
-                <h3 className="text-2xl font-bold">Gate Smashers — Varun Singla</h3>
-                <p className="text-sm text-muted-foreground italic">
-                  &quot;Are Core CS Subjects Still Relevant in the Age of AI?&quot;
-                </p>
-                <p className="text-muted-foreground text-sm leading-relaxed">
-                  Join Varun Singla — the face behind Gate Smashers — a platform that has guided millions of students through the most important concepts in Computer Science.
-                </p>
-                <ul className="space-y-2 text-sm text-muted-foreground">
-                  <li className="flex items-start gap-2"><span className="text-primary">▹</span> Why CS fundamentals remain the backbone of great engineers</li>
-                  <li className="flex items-start gap-2"><span className="text-primary">▹</span> How to approach learning in the AI-driven landscape</li>
-                  <li className="flex items-start gap-2"><span className="text-primary">▹</span> Skills that will matter most for 2026 and beyond</li>
-                  <li className="flex items-start gap-2"><span className="text-primary">▹</span> The story behind building Gate Smashers &amp; empowering millions</li>
-                </ul>
-                <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div className="p-3 rounded-lg bg-muted/30 border border-border/50">
-                    <p className="text-muted-foreground text-xs">Date &amp; Time</p>
-                    <p className="font-bold">13th March, 1 PM</p>
-                  </div>
-                  <div className="p-3 rounded-lg bg-muted/30 border border-border/50">
-                    <p className="text-muted-foreground text-xs">Entry Fee</p>
-                    <p className="font-bold">₹150</p>
-                  </div>
-                </div>
-                <div className="text-xs text-muted-foreground">
-                  <p>📞 Vaibhav Pujari — 7821935823</p>
-                  <p>📞 Unnati Vaidya — 7558371521</p>
-                </div>
-                <a href="https://learner.vierp.in/" target="_blank" rel="noopener noreferrer">
-                  <button className="w-full mt-2 px-6 py-3 rounded-lg bg-primary text-primary-foreground font-semibold hover:opacity-90 transition-opacity">
-                    Register Now →
-                  </button>
-                </a>
+                </Link>
               </div>
             </motion.div>
           </div>
