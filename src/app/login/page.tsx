@@ -97,7 +97,7 @@ export default function LoginPage() {
               Welcome Back
             </CardTitle>
             <CardDescription className="text-sm text-muted-foreground">
-              Sign in to manage your Club CMS dashboard
+              Sign in
             </CardDescription>
           </div>
         </CardHeader>
