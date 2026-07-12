@@ -23,6 +23,7 @@ const baseLinks = [
   { label: "About Us", path: "/about" },
   { label: "Activities", path: "/activities" },
   { label: "Events", path: "/events" },
+  { label: "Recruitment", path: "/recruitment" },
 ];
 
 const Navbar = () => {
@@ -55,7 +56,6 @@ const Navbar = () => {
     if (user.role === "ADMIN") {
       navLinks.push({ label: "CMS Admin", path: "/dashboard" });
     } else {
-      navLinks.push({ label: "Recruitment", path: "/recruitment" });
       navLinks.push({ label: "Profile", path: "/profile" });
     }
     navLinks.push({ label: "Logout", path: "#logout" });

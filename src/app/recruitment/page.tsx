@@ -53,6 +53,22 @@ interface MyBookingDetails {
   bookedAt: string;
 }
 
+const branches = [
+  "Artificial Intelligence & Data Science",
+  "Civil Engineering",
+  "Computer Engineering",
+  "Computer Engineering (Software Engineering)",
+  "Computer Science & Engineering (AI)",
+  "Computer Science and Engineering (AI & ML)",
+  "Computer Science and Engineering (Data Science)",
+  "Computer Science & Engineering (IoT and Cyber Security Including Blockchain Technology)",
+  "Electronics and Telecommunication Engineering",
+  "Information Technology",
+  "Instrumentation Engineering",
+  "Mechanical Engineering",
+  "Others"
+];
+
 export default function RecruitmentPage() {
   const router = useRouter();
   const [user, setUser] = useState<UserProfile | null>(null);
@@ -130,7 +146,7 @@ export default function RecruitmentPage() {
           loadBookingInfo();
         }
       } else {
-        router.push("/login?from=/recruitment");
+        router.push("/register?from=/recruitment");
       }
     } catch (err) {
       console.error("Failed to load user session", err);
@@ -506,12 +522,9 @@ export default function RecruitmentPage() {
                     {...register("branch")}
                   >
                     <option value="">Select your branch</option>
-                    <option value="CS/IT/CSAI/CSML">CS / IT / CSAI / CSML</option>
-                    <option value="ENTC">ENTC</option>
-                    <option value="AIDS">AIDS</option>
-                    <option value="CHEM">CHEM</option>
-                    <option value="MECH">MECH</option>
-                    <option value="INSTRU">INSTRU</option>
+                    {branches.map((b) => (
+                      <option key={b} value={b}>{b}</option>
+                    ))}
                   </select>
                   {errors.branch && (
                     <p className="text-xs font-semibold text-destructive">{errors.branch.message}</p>

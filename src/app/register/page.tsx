@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -30,6 +30,7 @@ type RegisterFormValues = z.infer<typeof registerSchema>;
 
 export default function RegisterPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
@@ -62,8 +63,10 @@ export default function RegisterPage() {
 
       if (response.success) {
         setApiSuccess("Account created successfully! Redirecting you to login...");
+        const from = searchParams.get("from") || "";
+        const redirectUrl = `/login?email=${encodeURIComponent(values.email)}${from ? `&from=${encodeURIComponent(from)}` : ""}`;
         setTimeout(() => {
-          router.push(`/login?email=${encodeURIComponent(values.email)}`);
+          router.push(redirectUrl);
         }, 2000);
       } else {
         setApiError(response.message || "Failed to register account.");
@@ -224,7 +227,7 @@ export default function RegisterPage() {
         <CardFooter className="flex flex-col text-center justify-center gap-3.5 border-t border-border/40 pt-4">
           <p className="text-xs text-muted-foreground">
             Already have an account?{" "}
-            <Link href="/login" className="text-primary hover:underline font-semibold">
+            <Link href={`/login${searchParams.get("from") ? `?from=${encodeURIComponent(searchParams.get("from")!)}` : ""}`} className="text-primary hover:underline font-semibold">
               Sign In
             </Link>
           </p>

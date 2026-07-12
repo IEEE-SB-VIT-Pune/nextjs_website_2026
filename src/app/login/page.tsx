@@ -60,7 +60,7 @@ export default function LoginPage() {
       const response = await loginUser(values);
       if (response.success) {
         // Redirect to dashboard on successful login
-        const from = searchParams.get("from") || "/dashboard";
+        const from = searchParams.get("from") || (response.user?.role === "ADMIN" ? "/dashboard" : "/recruitment");
         router.push(from);
         router.refresh();
       } else {
@@ -200,7 +200,7 @@ export default function LoginPage() {
         <CardFooter className="flex flex-col text-center justify-center gap-3.5 border-t border-border/40 pt-4">
           <p className="text-xs text-muted-foreground">
             Don't have an account?{" "}
-            <Link href="/register" className="text-primary hover:underline font-semibold">
+            <Link href={`/register${searchParams.get("from") ? `?from=${encodeURIComponent(searchParams.get("from")!)}` : ""}`} className="text-primary hover:underline font-semibold">
               Sign Up
             </Link>
           </p>
