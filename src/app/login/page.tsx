@@ -60,7 +60,7 @@ export default function LoginPage() {
       const response = await loginUser(values);
       if (response.success) {
         // Redirect to dashboard on successful login
-        const from = searchParams.get("from") || "/dashboard";
+        const from = searchParams.get("from") || (response.user?.role === "ADMIN" ? "/dashboard" : "/recruitment");
         router.push(from);
         router.refresh();
       } else {
@@ -97,7 +97,7 @@ export default function LoginPage() {
               Welcome Back
             </CardTitle>
             <CardDescription className="text-sm text-muted-foreground">
-              Sign in to manage your Club CMS dashboard
+              Sign in
             </CardDescription>
           </div>
         </CardHeader>
@@ -116,7 +116,7 @@ export default function LoginPage() {
             <div className="space-y-1.5">
               <Label htmlFor="email">Email Address</Label>
               <div className="relative">
-                <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                {/* <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" /> */}
                 <Input
                   id="email"
                   type="email"
@@ -146,7 +146,7 @@ export default function LoginPage() {
                 </button>
               </div>
               <div className="relative">
-                <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                {/* <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" /> */}
                 <Input
                   id="password"
                   type={showPassword ? "text" : "password"}
@@ -200,7 +200,7 @@ export default function LoginPage() {
         <CardFooter className="flex flex-col text-center justify-center gap-3.5 border-t border-border/40 pt-4">
           <p className="text-xs text-muted-foreground">
             Don't have an account?{" "}
-            <Link href="/register" className="text-primary hover:underline font-semibold">
+            <Link href={`/register${searchParams.get("from") ? `?from=${encodeURIComponent(searchParams.get("from")!)}` : ""}`} className="text-primary hover:underline font-semibold">
               Sign Up
             </Link>
           </p>

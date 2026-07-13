@@ -6,6 +6,7 @@ import { User } from "@/models/User";
 import { Interview } from "@/models/Interview";
 import { verifyJWT } from "@/lib/jwt";
 import { logResponseToGoogleSheet } from "@/lib/google";
+import { SystemConfig } from "@/models/SystemConfig";
 
 const recruitmentFormSchema = z.object({
   fullname: z.string().min(1, "Name is required").trim(),
@@ -18,6 +19,8 @@ const recruitmentFormSchema = z.object({
   projects: z.string().optional().default(""),
   expectations: z.string().optional().default(""),
   vagera: z.string().optional().default(""),
+  github: z.string().optional().default(""),
+  linkedin: z.string().optional().default(""),
 });
 
 export async function POST(request: Request) {
@@ -42,6 +45,22 @@ export async function POST(request: Request) {
     // Must be a USER and verified
     if (user.role !== "USER") {
       return NextResponse.json({ success: false, message: "Forbidden: Only regular candidates can apply." }, { status: 403 });
+    }
+
+    // Check if interview form is currently live
+    const interviewFormDoc = await SystemConfig.findOne({ key: "interviewForm" });
+    const configVal = interviewFormDoc ? interviewFormDoc.value : { isLive: false, mode: "MANUAL", start: null, end: null };
+    
+    let isLive = configVal.isLive;
+    if (configVal.mode === "AUTOMATIC") {
+      const now = new Date();
+      const start = configVal.start ? new Date(configVal.start) : null;
+      const end = configVal.end ? new Date(configVal.end) : null;
+      isLive = !!(start && end && now >= start && now <= end);
+    }
+    
+    if (!isLive) {
+      return NextResponse.json({ success: false, message: "Recruitment questionnaire is currently closed." }, { status: 400 });
     }
 
     if (!user.isEmailVerified) {
@@ -76,6 +95,8 @@ export async function POST(request: Request) {
         fullname: validation.data.fullname,
         email: user.email,
         phone_number: validation.data.phone_number,
+        github: validation.data.github,
+        linkedin: validation.data.linkedin,
         branch: validation.data.branch,
         whyPart: validation.data.whyPart,
         domain: validation.data.domain,

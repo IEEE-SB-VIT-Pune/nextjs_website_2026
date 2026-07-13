@@ -7,7 +7,6 @@ import { verifyJWT } from "@/lib/jwt";
 
 const updateProfileSchema = z.object({
   name: z.string().min(1, "Name is required").trim(),
-  avatar: z.string().optional(),
 });
 
 // GET currently logged-in user profile
@@ -93,7 +92,7 @@ export async function PUT(request: Request) {
       );
     }
 
-    const { name, avatar } = validation.data;
+    const { name } = validation.data;
 
     const user = await User.findById(payload.id);
     if (!user) {
@@ -111,9 +110,6 @@ export async function PUT(request: Request) {
     }
 
     user.name = name;
-    if (avatar !== undefined) {
-      user.avatar = avatar;
-    }
 
     await user.save();
 

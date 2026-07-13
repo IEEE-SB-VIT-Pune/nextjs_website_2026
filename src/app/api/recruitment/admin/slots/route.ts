@@ -68,7 +68,7 @@ export async function POST(request: Request) {
     }
 
     // 2. Otherwise execute Slot Generation range
-    const { startDate, endDate, startTime, endTime, duration = 60 } = body;
+    const { startDate, endDate, startTime, endTime, duration = 60, maxStudents = 4 } = body;
 
     if (!startDate || !endDate || !startTime || !endTime) {
       return NextResponse.json({ success: false, message: "All parameters (startDate, endDate, startTime, endTime) are required" }, { status: 400 });
@@ -95,7 +95,7 @@ export async function POST(request: Request) {
           dateTime: new Date(slotTime),
           endDateTime: slotEndTime,
           students: [],
-          maxStudents: 4,
+          maxStudents: Number(maxStudents),
           isActive: true
         });
 
@@ -114,6 +114,64 @@ export async function POST(request: Request) {
     });
   } catch (error: any) {
     console.error("POST /api/recruitment/admin/slots error:", error);
+    return NextResponse.json({ success: false, message: "An internal server error occurred" }, { status: 500 });
+  }
+}
+
+// PATCH edit single slot status or students limit (ADMIN only)
+export async function PATCH(request: Request) {
+  try {
+    const admin = await verifyAdmin();
+    if (!admin) {
+      return NextResponse.json({ success: false, message: "Forbidden: Admin access required" }, { status: 403 });
+    }
+
+    const body = await request.json();
+    const { id, isActive, maxStudents } = body;
+
+    if (!id) {
+      return NextResponse.json({ success: false, message: "Slot ID is required" }, { status: 400 });
+    }
+
+    const updateFields: any = {};
+    if (isActive !== undefined) updateFields.isActive = isActive;
+    if (maxStudents !== undefined) updateFields.maxStudents = Number(maxStudents);
+
+    const updatedSlot = await Slot.findByIdAndUpdate(id, { $set: updateFields }, { new: true });
+    if (!updatedSlot) {
+      return NextResponse.json({ success: false, message: "Slot not found" }, { status: 404 });
+    }
+
+    return NextResponse.json({ success: true, message: "Slot updated successfully", slot: updatedSlot });
+  } catch (error: any) {
+    console.error("PATCH /api/recruitment/admin/slots error:", error);
+    return NextResponse.json({ success: false, message: "An internal server error occurred" }, { status: 500 });
+  }
+}
+
+// DELETE single slot (ADMIN only)
+export async function DELETE(request: Request) {
+  try {
+    const admin = await verifyAdmin();
+    if (!admin) {
+      return NextResponse.json({ success: false, message: "Forbidden: Admin access required" }, { status: 403 });
+    }
+
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get("id");
+
+    if (!id) {
+      return NextResponse.json({ success: false, message: "Slot ID is required" }, { status: 400 });
+    }
+
+    const deletedSlot = await Slot.findByIdAndDelete(id);
+    if (!deletedSlot) {
+      return NextResponse.json({ success: false, message: "Slot not found" }, { status: 404 });
+    }
+
+    return NextResponse.json({ success: true, message: "Slot deleted successfully" });
+  } catch (error: any) {
+    console.error("DELETE /api/recruitment/admin/slots error:", error);
     return NextResponse.json({ success: false, message: "An internal server error occurred" }, { status: 500 });
   }
 }

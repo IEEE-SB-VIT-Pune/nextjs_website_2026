@@ -40,16 +40,6 @@ const domains = [
       "One of our blockbusters, the coding club consists of all the enthusiastic programming geeks. The like-minded peeps meet twice a week in sessions organized exclusively for IEEE members. The instructors focus on helping you ace high profile questions solved from sites like Leetcode & Codeforces, along with various fun activities and competitions.",
   },
   {
-    title: "Cyber Security",
-    description:
-      "We live in the digital era. As a result, several frauds and malicious attacks have been documented. Cybersecurity is required to preserve the internet era and it protects you from cybercriminals. IEEE organizes influential webinars and workshops to help the attendees understand more about cyber security.",
-  },
-  {
-    title: "IoT",
-    description:
-      "Internet-of-Things gadgets are all around us, continually transferring data and talking to one another. Virtual assistants, smart electronics, and wearable health trackers are all examples of IoT devices we encounter daily. Each device collects data in real time and transmits it to make our lives more efficient.",
-  },
-  {
     title: "Research",
     description:
       "When tasked with finding a solution to a problem, research helps identify, assess, and collate. In universities, the research component allows for a more comprehensive educational experience. Our Research team is dedicated to keep you updated with the latest developments in the R&D sector of the technical domain in every possible way.",

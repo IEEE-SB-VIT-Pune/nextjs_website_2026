@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -20,12 +21,17 @@ const interviewFormSchema = z.object({
   phone_number: z.string().min(10, "WhatsApp number must be at least 10 digits").trim(),
   branch: z.string().min(1, "Branch selection is required"),
   whyPart: z.string().min(1, "Motivation field is required").trim(),
-  domain: z.array(z.string()).min(1, "Select at least one domain preference"),
+  domain: z
+    .array(z.string())
+    .min(1, "Select at least one domain preference")
+    .max(3, "You can select a maximum of 3 domains"),
   whyWork: z.string().min(1, "Please answer this required field").trim(),
   skills: z.string().min(1, "Skills lists are required").trim(),
   projects: z.string(),
   expectations: z.string(),
   vagera: z.string(),
+  github: z.string(),
+  linkedin: z.string(),
 });
 
 type InterviewFormValues = z.infer<typeof interviewFormSchema>;
@@ -48,10 +54,39 @@ interface MyBookingDetails {
   bookedAt: string;
 }
 
+const branches = [
+  "Artificial Intelligence & Data Science",
+  "Civil Engineering",
+  "Computer Engineering",
+  "Computer Engineering (Software Engineering)",
+  "Computer Science & Engineering (AI)",
+  "Computer Science and Engineering (AI & ML)",
+  "Computer Science and Engineering (Data Science)",
+  "Computer Science & Engineering (IoT and Cyber Security Including Blockchain Technology)",
+  "Electronics and Telecommunication Engineering",
+  "Information Technology",
+  "Instrumentation Engineering",
+  "Mechanical Engineering",
+  "Others"
+];
+
 export default function RecruitmentPage() {
   const router = useRouter();
   const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [config, setConfig] = useState<any>(null);
+
+  const loadConfig = async () => {
+    try {
+      const res = await fetch("/api/recruitment/config");
+      const data = await res.json();
+      if (data.success && data.data) {
+        setConfig(data.data);
+      }
+    } catch (err) {
+      console.error("Failed to load config", err);
+    }
+  };
 
   // Workflow states
   const [step, setStep] = useState<"verify" | "apply" | "book">("verify");
@@ -95,6 +130,8 @@ export default function RecruitmentPage() {
       projects: "",
       expectations: "",
       vagera: "",
+      github: "",
+      linkedin: "",
     },
   });
 
@@ -102,6 +139,7 @@ export default function RecruitmentPage() {
 
   const loadUserData = async () => {
     try {
+      await loadConfig();
       const response = await getProfile();
       if (response.success && response.user) {
         if (response.user.role !== "USER") {
@@ -123,7 +161,7 @@ export default function RecruitmentPage() {
           loadBookingInfo();
         }
       } else {
-        router.push("/login?from=/recruitment");
+        router.push("/register?from=/recruitment");
       }
     } catch (err) {
       console.error("Failed to load user session", err);
@@ -324,6 +362,54 @@ export default function RecruitmentPage() {
 
   if (!user) return null;
 
+  const isApplyClosed = (step === "verify" || step === "apply") && (!config || !config.interviewForm?.isCurrentlyLive);
+  if (isApplyClosed) {
+    return (
+      <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center p-4">
+        <Card className="max-w-md w-full border border-border bg-card/40 backdrop-blur-md text-center">
+          <CardHeader className="space-y-3">
+            <div className="mx-auto h-12 w-12 rounded-full bg-destructive/10 text-destructive flex items-center justify-center">
+              <AlertCircle className="h-6 w-6" />
+            </div>
+            <CardTitle className="text-xl font-bold">Applications Closed</CardTitle>
+            <CardDescription className="text-sm text-muted-foreground leading-relaxed">
+              Recruitment questionnaire is currently closed. Thank you for your interest!
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="pt-2">
+            <Link href="/">
+              <Button className="w-full">Go Back Home</Button>
+            </Link>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  const isBookingClosed = step === "book" && !myBooking && (!config || !config.slotBooking?.isCurrentlyLive);
+  if (isBookingClosed) {
+    return (
+      <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center p-4">
+        <Card className="max-w-md w-full border border-border bg-card/40 backdrop-blur-md text-center">
+          <CardHeader className="space-y-3">
+            <div className="mx-auto h-12 w-12 rounded-full bg-destructive/10 text-destructive flex items-center justify-center">
+              <AlertCircle className="h-6 w-6" />
+            </div>
+            <CardTitle className="text-xl font-bold">Interview Booking Closed</CardTitle>
+            <CardDescription className="text-sm text-muted-foreground leading-relaxed">
+              Interview slot booking is currently closed.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="pt-2">
+            <Link href="/">
+              <Button className="w-full">Go Back Home</Button>
+            </Link>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="p-6 relative z-10 max-w-4xl mx-auto min-h-[calc(100vh-4rem)] space-y-8">
       {/* Page Header */}
@@ -461,20 +547,47 @@ export default function RecruitmentPage() {
                 </div>
 
                 <div className="space-y-1.5">
+                  <Label htmlFor="github">GitHub Profile Link (Optional)</Label>
+                  <Input
+                    id="github"
+                    type="url"
+                    placeholder="https://github.com/username"
+                    error={!!errors.github}
+                    disabled={applyLoading}
+                    {...register("github")}
+                  />
+                  {errors.github && (
+                    <p className="text-xs font-semibold text-destructive">{errors.github.message}</p>
+                  )}
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="linkedin">LinkedIn Profile Link (Optional)</Label>
+                  <Input
+                    id="linkedin"
+                    type="url"
+                    placeholder="https://linkedin.com/in/username"
+                    error={!!errors.linkedin}
+                    disabled={applyLoading}
+                    {...register("linkedin")}
+                  />
+                  {errors.linkedin && (
+                    <p className="text-xs font-semibold text-destructive">{errors.linkedin.message}</p>
+                  )}
+                </div>
+
+                <div className="space-y-1.5">
                   <Label htmlFor="branch">Branch</Label>
                   <select
                     id="branch"
-                    className="flex h-10 w-full rounded-md border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
+                    className="flex h-13 w-full rounded-md border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
                     disabled={applyLoading}
                     {...register("branch")}
                   >
                     <option value="">Select your branch</option>
-                    <option value="CS/IT/CSAI/CSML">CS / IT / CSAI / CSML</option>
-                    <option value="ENTC">ENTC</option>
-                    <option value="AIDS">AIDS</option>
-                    <option value="CHEM">CHEM</option>
-                    <option value="MECH">MECH</option>
-                    <option value="INSTRU">INSTRU</option>
+                    {branches.map((b) => (
+                      <option key={b} value={b}>{b}</option>
+                    ))}
                   </select>
                   {errors.branch && (
                     <p className="text-xs font-semibold text-destructive">{errors.branch.message}</p>
@@ -486,19 +599,59 @@ export default function RecruitmentPage() {
                 2. Domains of Interest
               </div>
               <div className="space-y-2">
+                <p
+                  className={`text-xs ${selectedDomains.length === 3
+                      ? "text-amber-500 font-medium"
+                      : "text-muted-foreground"
+                    }`}
+                >
+                  You can select up to 3 domains. ({selectedDomains.length}/3 selected)
+                </p>
                 <Label>Select domains you are interested in (Multiple allowed)</Label>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3 bg-card/25 p-3 rounded-lg border border-border/40">
-                  {["Technical", "Management & PR", "Video Editing", "Graphic Design & Aesthetics", "Content and Social Media", "Finance", "Sponsorship and Curation"].map((domain) => (
+                  {[
+                    "Aesthetic",
+                    "Content",
+                    "Curation",
+                    "Finance",
+                    "Graphics",
+                    "Management",
+                    "PR & SM",
+                    "Sponsorship",
+                    "Technical",
+                    "Video Editing"
+                  ].map((domain) => (
                     <div key={domain} className="flex items-center space-x-2">
                       <Checkbox
                         id={`domain-${domain}`}
                         checked={selectedDomains.includes(domain)}
+                        disabled={
+
+                          applyLoading ||
+
+                          (!selectedDomains.includes(domain) && selectedDomains.length >= 3)
+
+                        }
                         onChange={(e: any) => {
                           const checked = e.target.checked;
+
                           if (checked) {
-                            setValue("domain", [...selectedDomains, domain]);
+                            // Prevent selecting more than 3
+                            if (selectedDomains.length >= 3) {
+                              return;
+                            }
+
+                            setValue("domain", [...selectedDomains, domain], {
+                              shouldValidate: true,
+                            });
                           } else {
-                            setValue("domain", selectedDomains.filter((d) => d !== domain));
+                            setValue(
+                              "domain",
+                              selectedDomains.filter((d) => d !== domain),
+                              {
+                                shouldValidate: true,
+                              }
+                            );
                           }
                         }}
                       />
@@ -650,8 +803,15 @@ export default function RecruitmentPage() {
                   </div>
                 </div>
 
+                {!config?.slotBooking?.isCurrentlyLive && (
+                  <div className="flex items-center gap-2 p-3.5 rounded-lg border border-yellow-500/25 bg-yellow-500/10 text-sm text-yellow-400 mt-2">
+                    <AlertCircle className="h-4 w-4 shrink-0" />
+                    <span>Slot booking is currently closed. You cannot change or reschedule your slot.</span>
+                  </div>
+                )}
+
                 <div className="flex justify-end pt-2">
-                  <Button variant="destructive" onClick={handleCancelBooking} disabled={bookingLoading} className="gap-2">
+                  <Button variant="destructive" onClick={handleCancelBooking} disabled={bookingLoading || !config?.slotBooking?.isCurrentlyLive} className="gap-2">
                     {bookingLoading && <Loader2 className="h-4 w-4 animate-spin" />}
                     Cancel Booking Slot
                   </Button>
@@ -673,6 +833,12 @@ export default function RecruitmentPage() {
                 </Button>
               </CardHeader>
               <CardContent className="space-y-4">
+                {!config?.slotBooking?.isCurrentlyLive && (
+                  <div className="flex items-center gap-2 p-3.5 rounded-lg border border-yellow-500/25 bg-yellow-500/10 text-sm text-yellow-400">
+                    <AlertCircle className="h-4 w-4 shrink-0" />
+                    <span>Slot booking is currently closed by the administration. You cannot book or change slots.</span>
+                  </div>
+                )}
                 {slots.length === 0 ? (
                   <div className="text-center py-8 text-sm text-muted-foreground font-semibold">
                     No active interview time slots generated at the moment. Please notify the administrator.
@@ -708,14 +874,13 @@ export default function RecruitmentPage() {
                                 <button
                                   key={s.id}
                                   onClick={() => setSelectedSlotId(s.id)}
-                                  disabled={s.isFull || bookingLoading}
-                                  className={`p-3.5 border rounded-lg text-left transition-all relative ${
-                                    s.isFull
-                                      ? "border-border opacity-40 cursor-not-allowed bg-muted/5"
-                                      : selectedSlotId === s.id
+                                  disabled={s.isFull || bookingLoading || !config?.slotBooking?.isCurrentlyLive}
+                                  className={`p-3.5 border rounded-lg text-left transition-all relative ${s.isFull
+                                    ? "border-border opacity-40 cursor-not-allowed bg-muted/5"
+                                    : selectedSlotId === s.id
                                       ? "border-primary bg-primary/10 ring-2 ring-primary/20 text-foreground"
                                       : "border-border/80 hover:border-primary/50 text-foreground"
-                                  }`}
+                                    }`}
                                 >
                                   <div className="font-bold text-sm">
                                     {formatTimeStr(s.dateTime)} - {formatTimeStr(s.endDateTime)}
@@ -750,7 +915,7 @@ export default function RecruitmentPage() {
                       </p>
                     </div>
                     <div className="flex gap-2">
-                      <Button onClick={() => handleBookSlot(selectedSlotId)} disabled={bookingLoading} className="gap-2">
+                      <Button onClick={() => handleBookSlot(selectedSlotId)} disabled={bookingLoading || !config?.slotBooking?.isCurrentlyLive} className="gap-2">
                         {bookingLoading && <Loader2 className="h-4 w-4 animate-spin" />}
                         Confirm Slot <ArrowRight className="h-4 w-4" />
                       </Button>

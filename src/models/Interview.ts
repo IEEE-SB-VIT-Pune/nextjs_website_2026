@@ -55,6 +55,14 @@ const InterviewSchema = new Schema(
       type: String,
       default: "",
     },
+    github: {
+      type: String,
+      default: "",
+    },
+    linkedin: {
+      type: String,
+      default: "",
+    },
   },
   {
     timestamps: true,

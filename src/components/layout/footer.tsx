@@ -60,12 +60,12 @@ const Footer = () => {
               Connect With Us
             </h3>
             <div className="flex flex-col gap-2 text-sm text-muted-foreground">
-              <a 
-                href="mailto:ieeevitpune@gmail.com" 
+              <a
+                href="mailto:ieee.sb@vit.edu"
                 className="flex items-center gap-2 hover:text-primary transition-colors"
               >
                 <Mail className="h-4 w-4 text-primary" />
-                ieeevitpune@gmail.com
+                ieee.sb@vit.edu
               </a>
               <span className="flex items-center gap-2">
                 <MapPin className="h-4 w-4 text-primary" />
@@ -93,13 +93,19 @@ const Footer = () => {
           </div>
         </div>
 
-        <div className="mt-10 pt-6 border-t border-border/50 text-center text-xs text-muted-foreground space-y-1">
+        <div className="mt-10 pt-6 border-t border-border/50 text-center text-xs text-muted-foreground space-y-1.5">
           <p>© {new Date().getFullYear()} IEEE Student Branch. All rights reserved.</p>
           <p>
-            Made with &lt;3 by{" "}
-            <Link href="/contributors" className="text-primary hover:underline">
-              Web Team
-            </Link>
+            Maintained by{" "}
+            <a href="mailto:ieee.sb@vit.edu" className="text-primary hover:underline font-semibold">
+              Prathmesh Toke
+            </a>
+          </p>
+          <p className="text-[10px] text-muted-foreground/80 mt-1">
+            If you face any issues regarding the website, please contact me at{" "}
+            <a href="mailto:ieee.sb@vit.edu" className="text-primary hover:underline font-mono">
+              ieee.sb@vit.edu
+            </a>
           </p>
         </div>
       </div>
