@@ -17,8 +17,15 @@ import Harsh from "@/assets/images/contributorsdevelopers/Harsh_Mehta.png";
 import Atharva from "@/assets/images/contributorsdevelopers/Atharva_Ansingkar.png";
 import TanmayProjectHead from "@/assets/images/contributorsdevelopers/Tanmay_Mutalik.png";
 import OmProjectHead from "@/assets/images/contributorsdevelopers/Om_Khode.png";
+import PrathmeshToke from "@/assets/images/contributorsdevelopers/Prathmesh Toke.png";
 
 const projectHeads = [
+  {
+    name: "Prathmesh Toke",
+    role: "Web Project Head 2025-26",
+    image: PrathmeshToke,
+    imageClassName: "object-cover object-top",
+  },
   {
     name: "Harsh Mehta",
     role: "Project Head 2025-26",

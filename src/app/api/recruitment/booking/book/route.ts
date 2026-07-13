@@ -6,6 +6,7 @@ import { User } from "@/models/User";
 import { Interview } from "@/models/Interview";
 import { Slot } from "@/models/Slot";
 import { verifyJWT } from "@/lib/jwt";
+import { SystemConfig } from "@/models/SystemConfig";
 import {
   createGoogleCalendarEvent,
   updateGoogleCalendarEvent,
@@ -38,6 +39,23 @@ export async function POST(request: Request) {
     const { slotId } = validation.data;
 
     await connectDB();
+
+    // Check slot booking configuration
+    const slotBookingDoc = await SystemConfig.findOne({ key: "slotBooking" });
+    const configVal = slotBookingDoc ? slotBookingDoc.value : { isLive: false, mode: "MANUAL", start: null, end: null };
+    
+    let isLive = configVal.isLive;
+    if (configVal.mode === "AUTOMATIC") {
+      const now = new Date();
+      const start = configVal.start ? new Date(configVal.start) : null;
+      const end = configVal.end ? new Date(configVal.end) : null;
+      isLive = !!(start && end && now >= start && now <= end);
+    }
+    
+    if (!isLive) {
+      return NextResponse.json({ success: false, message: "Slot booking is currently closed." }, { status: 400 });
+    }
+
     const user = await User.findById(payload.id);
     if (!user) {
       return NextResponse.json({ success: false, message: "User not found" }, { status: 404 });

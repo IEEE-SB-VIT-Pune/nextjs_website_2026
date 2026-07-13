@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -73,6 +74,19 @@ export default function RecruitmentPage() {
   const router = useRouter();
   const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [config, setConfig] = useState<any>(null);
+
+  const loadConfig = async () => {
+    try {
+      const res = await fetch("/api/recruitment/config");
+      const data = await res.json();
+      if (data.success && data.data) {
+        setConfig(data.data);
+      }
+    } catch (err) {
+      console.error("Failed to load config", err);
+    }
+  };
 
   // Workflow states
   const [step, setStep] = useState<"verify" | "apply" | "book">("verify");
@@ -125,6 +139,7 @@ export default function RecruitmentPage() {
 
   const loadUserData = async () => {
     try {
+      await loadConfig();
       const response = await getProfile();
       if (response.success && response.user) {
         if (response.user.role !== "USER") {
@@ -346,6 +361,54 @@ export default function RecruitmentPage() {
   }
 
   if (!user) return null;
+
+  const isApplyClosed = (step === "verify" || step === "apply") && (!config || !config.interviewForm?.isCurrentlyLive);
+  if (isApplyClosed) {
+    return (
+      <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center p-4">
+        <Card className="max-w-md w-full border border-border bg-card/40 backdrop-blur-md text-center">
+          <CardHeader className="space-y-3">
+            <div className="mx-auto h-12 w-12 rounded-full bg-destructive/10 text-destructive flex items-center justify-center">
+              <AlertCircle className="h-6 w-6" />
+            </div>
+            <CardTitle className="text-xl font-bold">Applications Closed</CardTitle>
+            <CardDescription className="text-sm text-muted-foreground leading-relaxed">
+              Recruitment questionnaire is currently closed. Thank you for your interest!
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="pt-2">
+            <Link href="/">
+              <Button className="w-full">Go Back Home</Button>
+            </Link>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  const isBookingClosed = step === "book" && !myBooking && (!config || !config.slotBooking?.isCurrentlyLive);
+  if (isBookingClosed) {
+    return (
+      <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center p-4">
+        <Card className="max-w-md w-full border border-border bg-card/40 backdrop-blur-md text-center">
+          <CardHeader className="space-y-3">
+            <div className="mx-auto h-12 w-12 rounded-full bg-destructive/10 text-destructive flex items-center justify-center">
+              <AlertCircle className="h-6 w-6" />
+            </div>
+            <CardTitle className="text-xl font-bold">Interview Booking Closed</CardTitle>
+            <CardDescription className="text-sm text-muted-foreground leading-relaxed">
+              Interview slot booking is currently closed.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="pt-2">
+            <Link href="/">
+              <Button className="w-full">Go Back Home</Button>
+            </Link>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 relative z-10 max-w-4xl mx-auto min-h-[calc(100vh-4rem)] space-y-8">
@@ -740,8 +803,15 @@ export default function RecruitmentPage() {
                   </div>
                 </div>
 
+                {!config?.slotBooking?.isCurrentlyLive && (
+                  <div className="flex items-center gap-2 p-3.5 rounded-lg border border-yellow-500/25 bg-yellow-500/10 text-sm text-yellow-400 mt-2">
+                    <AlertCircle className="h-4 w-4 shrink-0" />
+                    <span>Slot booking is currently closed. You cannot change or reschedule your slot.</span>
+                  </div>
+                )}
+
                 <div className="flex justify-end pt-2">
-                  <Button variant="destructive" onClick={handleCancelBooking} disabled={bookingLoading} className="gap-2">
+                  <Button variant="destructive" onClick={handleCancelBooking} disabled={bookingLoading || !config?.slotBooking?.isCurrentlyLive} className="gap-2">
                     {bookingLoading && <Loader2 className="h-4 w-4 animate-spin" />}
                     Cancel Booking Slot
                   </Button>
@@ -763,6 +833,12 @@ export default function RecruitmentPage() {
                 </Button>
               </CardHeader>
               <CardContent className="space-y-4">
+                {!config?.slotBooking?.isCurrentlyLive && (
+                  <div className="flex items-center gap-2 p-3.5 rounded-lg border border-yellow-500/25 bg-yellow-500/10 text-sm text-yellow-400">
+                    <AlertCircle className="h-4 w-4 shrink-0" />
+                    <span>Slot booking is currently closed by the administration. You cannot book or change slots.</span>
+                  </div>
+                )}
                 {slots.length === 0 ? (
                   <div className="text-center py-8 text-sm text-muted-foreground font-semibold">
                     No active interview time slots generated at the moment. Please notify the administrator.
@@ -798,7 +874,7 @@ export default function RecruitmentPage() {
                                 <button
                                   key={s.id}
                                   onClick={() => setSelectedSlotId(s.id)}
-                                  disabled={s.isFull || bookingLoading}
+                                  disabled={s.isFull || bookingLoading || !config?.slotBooking?.isCurrentlyLive}
                                   className={`p-3.5 border rounded-lg text-left transition-all relative ${s.isFull
                                     ? "border-border opacity-40 cursor-not-allowed bg-muted/5"
                                     : selectedSlotId === s.id
@@ -839,7 +915,7 @@ export default function RecruitmentPage() {
                       </p>
                     </div>
                     <div className="flex gap-2">
-                      <Button onClick={() => handleBookSlot(selectedSlotId)} disabled={bookingLoading} className="gap-2">
+                      <Button onClick={() => handleBookSlot(selectedSlotId)} disabled={bookingLoading || !config?.slotBooking?.isCurrentlyLive} className="gap-2">
                         {bookingLoading && <Loader2 className="h-4 w-4 animate-spin" />}
                         Confirm Slot <ArrowRight className="h-4 w-4" />
                       </Button>

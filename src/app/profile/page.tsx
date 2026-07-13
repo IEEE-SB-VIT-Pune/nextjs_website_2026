@@ -16,7 +16,6 @@ import { getProfile, updateProfile, changePassword, type UserProfile } from "@/s
 
 const profileSchema = z.object({
   name: z.string().min(1, "Name is required").trim(),
-  avatar: z.string().optional(),
 });
 
 const passwordSchema = z.object({
@@ -48,7 +47,7 @@ export default function ProfilePage() {
 
   const profileForm = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
-    defaultValues: { name: "", avatar: "" },
+    defaultValues: { name: "" },
   });
 
   const passwordForm = useForm<PasswordFormValues>({
@@ -64,7 +63,6 @@ export default function ProfilePage() {
           setUser(response.user);
           profileForm.reset({
             name: response.user.name,
-            avatar: response.user.avatar || "",
           });
         } else {
           router.push("/login");
@@ -211,17 +209,7 @@ export default function ProfilePage() {
                 </p>
               </div>
 
-              <div className="space-y-1.5">
-                <Label htmlFor="avatar">Avatar Image URL</Label>
-                <Input
-                  id="avatar"
-                  type="url"
-                  placeholder="https://example.com/avatar.png"
-                  error={!!profileForm.formState.errors.avatar}
-                  disabled={profileLoading}
-                  {...profileForm.register("avatar")}
-                />
-              </div>
+
 
               <Button type="submit" disabled={profileLoading} className="w-full flex items-center justify-center gap-2 mt-2">
                 {profileLoading && <Loader2 className="h-4 w-4 animate-spin" />}

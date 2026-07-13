@@ -1,9 +1,29 @@
 import { google } from "googleapis";
 import { v4 as uuidv4 } from "uuid";
+import fs from "fs";
+import path from "path";
 
 let oAuth2Client: any = null;
 let calendar: any = null;
 let sheets: any = null;
+
+async function updateEnvFile(key: string, value: string) {
+  try {
+    const envPath = path.join(process.cwd(), ".env.local");
+    if (!fs.existsSync(envPath)) return;
+    let content = fs.readFileSync(envPath, "utf-8");
+    const regex = new RegExp(`^${key}=.*$`, "m");
+    if (regex.test(content)) {
+      content = content.replace(regex, `${key}=${value}`);
+    } else {
+      content += `\n${key}=${value}`;
+    }
+    fs.writeFileSync(envPath, content, "utf-8");
+    console.log(`📝 [Google Auth] Updated ${key} in .env.local silently.`);
+  } catch (err: any) {
+    console.error(`[Google Auth] Error updating env file for ${key}:`, err.message);
+  }
+}
 
 try {
   const clientId = process.env.GOOGLE_CLIENT_ID;
@@ -18,6 +38,18 @@ try {
     );
 
     oAuth2Client.setCredentials({ refresh_token: refreshToken });
+
+    oAuth2Client.on("tokens", async (tokens: any) => {
+      if (tokens.refresh_token) {
+        console.log("🔄 [Google Auth] Received a new refresh token silently!");
+        process.env.GOOGLE_REFRESH_TOKEN = tokens.refresh_token;
+        await updateEnvFile("GOOGLE_REFRESH_TOKEN", tokens.refresh_token);
+      }
+      if (tokens.access_token) {
+        console.log("🔑 [Google Auth] Access token refreshed silently.");
+      }
+    });
+
     calendar = google.calendar({ version: "v3", auth: oAuth2Client });
     sheets = google.sheets({ version: "v4", auth: oAuth2Client });
 
@@ -28,6 +60,14 @@ try {
 } catch (error: any) {
   console.error("❌ Error setting up Google API clients:", error.message);
   console.warn("Google integrations falling back to MOCK MODE.");
+}
+
+function handleGoogleError(actionName: string, error: any) {
+  if (error.message && error.message.includes("invalid_grant")) {
+    console.warn(`⚠️ [Google Sheets Sync] ${actionName} skipped (invalid_grant). Your GOOGLE_REFRESH_TOKEN has expired or is invalid. Please run: node scratch/get_refresh_token.js to generate a new token.`);
+  } else {
+    console.error(`❌ [Google Sheets Sync] ${actionName} failed:`, error.message);
+  }
 }
 
 // Initialize sheet headers
@@ -54,7 +94,7 @@ export async function initializeGoogleSheetHeaders() {
       console.log("📊 [Google Sheets] Headers initialized in Sheet1 successfully.");
     }
   } catch (error: any) {
-    console.warn("⚠️ [Google Sheets] Failed to initialize headers:", error.message);
+    handleGoogleError("Initialize Main Sheet Headers", error);
   }
 }
 
@@ -91,7 +131,7 @@ export async function createGoogleCalendarEvent(eventDetails: {
       console.log(`[Google Calendar] Successfully created event. ID: ${response.data.id}`);
       return response.data;
     } catch (err: any) {
-      console.error("[Google Calendar] Failed to create event, falling back to mock:", err.message);
+      handleGoogleError("Create Calendar Event", err);
     }
   }
 
@@ -126,7 +166,7 @@ export async function updateGoogleCalendarEvent(eventId: string, eventDetails: {
       console.log(`[Google Calendar] Successfully updated event: ${eventId}`);
       return response.data;
     } catch (err: any) {
-      console.error(`[Google Calendar] Failed to update event ${eventId}:`, err.message);
+      handleGoogleError(`Update Calendar Event ${eventId}`, err);
     }
   }
 
@@ -145,7 +185,7 @@ export async function deleteGoogleCalendarEvent(eventId: string) {
       console.log(`[Google Calendar] Successfully deleted event: ${eventId}`);
       return true;
     } catch (err: any) {
-      console.error(`[Google Calendar] Failed to delete event ${eventId}:`, err.message);
+      handleGoogleError(`Delete Calendar Event ${eventId}`, err);
     }
   }
 
@@ -200,7 +240,7 @@ export async function logBookingToGoogleSheet(candidate: {
 
     console.log(`📊 [Google Sheets Sync] Successfully logged booking for ${candidate.email}`);
   } catch (error: any) {
-    console.error("❌ [Google Sheets Sync] Failed to append booking details:", error.message);
+    handleGoogleError("Log Slot Booking", error);
   }
 }
 
@@ -228,7 +268,7 @@ export async function logCancellationToGoogleSheet(studentEmail: string, googleE
         const rowStatus = rows[i][10];
 
         const emailMatches = rowEmail && rowEmail.toLowerCase() === studentEmail.toLowerCase();
-        
+
         let isMatch = false;
         if (googleEventId && googleEventId !== "N/A" && googleEventId !== "null") {
           // Match both email and the exact Calendar Event ID
@@ -279,7 +319,7 @@ export async function logCancellationToGoogleSheet(studentEmail: string, googleE
       }
     }
   } catch (error: any) {
-    console.error("❌ [Google Sheets Sync] Failed to update cancellation details:", error.message);
+    handleGoogleError("Log Slot Cancellation", error);
   }
 }
 
@@ -307,7 +347,7 @@ export async function initializeResponseSheetHeaders() {
       console.log("📊 [Google Sheets] Headers initialized in Response Sheet successfully.");
     }
   } catch (error: any) {
-    console.warn("⚠️ [Google Sheets] Failed to initialize response headers:", error.message);
+    handleGoogleError("Initialize Response Sheet Headers", error);
   }
 }
 
@@ -366,7 +406,7 @@ export async function logResponseToGoogleSheet(application: {
 
     console.log(`📊 [Google Sheets Sync] Successfully logged application response for ${application.email}`);
   } catch (error: any) {
-    console.error("❌ [Google Sheets Sync] Failed to append application response details:", error.message);
+    handleGoogleError("Log Application Response", error);
   }
 }
 

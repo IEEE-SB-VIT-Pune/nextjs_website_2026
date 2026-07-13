@@ -3,7 +3,31 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { LogOut, User, Users, Calendar, BookOpen, Image as ImageIcon, Settings, ShieldAlert, Layout, ArrowRight, RefreshCw, Trash2, CalendarPlus, ListFilter, Loader2 } from "lucide-react";
+import {
+  LogOut,
+  User,
+  Users,
+  Calendar,
+  BookOpen,
+  Settings,
+  ShieldAlert,
+  ArrowRight,
+  RefreshCw,
+  Trash2,
+  CalendarPlus,
+  ListFilter,
+  Loader2,
+  CheckCircle2,
+  AlertCircle,
+  Plus,
+  Edit2,
+  Lock,
+  Unlock,
+  Eye,
+  EyeOff,
+  Save,
+  Clock
+} from "lucide-react";
 
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -28,8 +52,12 @@ export default function DashboardPage() {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Recruitment Stats
+  // Dynamic tab switcher state
+  const [activeTab, setActiveTab] = useState<"overview" | "slots" | "controls" | "events">("overview");
+
+  // Recruitment Overview Stats
   const [applicants, setApplicants] = useState<ApplicantDetails[]>([]);
+  const [allSlots, setAllSlots] = useState<any[]>([]);
   const [totalSlots, setTotalSlots] = useState(0);
   const [bookedSpots, setBookedSpots] = useState(0);
   const [recruitmentLoading, setRecruitmentLoading] = useState(false);
@@ -40,20 +68,119 @@ export default function DashboardPage() {
   const [startTime, setStartTime] = useState("09:00");
   const [endTime, setEndTime] = useState("17:00");
   const [duration, setDuration] = useState(60);
+  const [maxStudentsInput, setMaxStudentsInput] = useState(4);
   const [genLoading, setGenLoading] = useState(false);
   const [genSuccess, setGenSuccess] = useState<string | null>(null);
   const [genError, setGenError] = useState<string | null>(null);
 
+  // Timeline / Live Status Configuration States
+  const [configsLoading, setConfigsLoading] = useState(false);
+  const [configsError, setConfigsError] = useState<string | null>(null);
+  const [configsSuccess, setConfigsSuccess] = useState<string | null>(null);
+
+  const [formMode, setFormMode] = useState<"MANUAL" | "AUTOMATIC">("MANUAL");
+  const [formIsLive, setFormIsLive] = useState(true);
+  const [formStart, setFormStart] = useState("");
+  const [formEnd, setFormEnd] = useState("");
+
+  const [bookingMode, setBookingMode] = useState<"MANUAL" | "AUTOMATIC">("MANUAL");
+  const [bookingIsLive, setBookingIsLive] = useState(true);
+  const [bookingStart, setBookingStart] = useState("");
+  const [bookingEnd, setBookingEnd] = useState("");
+
+  const isInitialized = React.useRef(false);
+
+  // Auto-save changes to system configs when user modifies them
+  useEffect(() => {
+    if (!isInitialized.current) {
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      setConfigsLoading(true);
+      setConfigsSuccess(null);
+      setConfigsError(null);
+      try {
+        const formValue = {
+          mode: formMode,
+          isLive: formIsLive,
+          start: formStart ? new Date(formStart).toISOString() : null,
+          end: formEnd ? new Date(formEnd).toISOString() : null,
+        };
+
+        const bookingValue = {
+          mode: bookingMode,
+          isLive: bookingIsLive,
+          start: bookingStart ? new Date(bookingStart).toISOString() : null,
+          end: bookingEnd ? new Date(bookingEnd).toISOString() : null,
+        };
+
+        // Save Form config
+        await fetch("/api/admin/config", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ key: "interviewForm", value: formValue }),
+        });
+
+        // Save Booking config
+        await fetch("/api/admin/config", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ key: "slotBooking", value: bookingValue }),
+        });
+
+        setConfigsSuccess("Changes auto-saved to database 💾");
+      } catch (err) {
+        console.error("Auto-save error:", err);
+        setConfigsError("Failed to auto-save changes.");
+      } finally {
+        setConfigsLoading(false);
+      }
+    }, 800); // 800ms debounce
+
+    return () => clearTimeout(timer);
+  }, [
+    formMode,
+    formIsLive,
+    formStart,
+    formEnd,
+    bookingMode,
+    bookingIsLive,
+    bookingStart,
+    bookingEnd,
+  ]);
+
+  // Event Manager States
+  const [allEvents, setAllEvents] = useState<any[]>([]);
+  const [eventForm, setEventForm] = useState({
+    id: "",
+    title: "",
+    description: "",
+    category: "Event",
+    dateText: "",
+    timeText: "",
+    prizePool: "",
+    teamSize: "",
+    entryFee: "",
+    venue: "VIT Pune",
+    type: "PREVIOUS" as "UPCOMING" | "PREVIOUS",
+  });
+  const [eventLoading, setEventLoading] = useState(false);
+  const [eventSuccess, setEventSuccess] = useState<string | null>(null);
+  const [eventError, setEventError] = useState<string | null>(null);
+
+  // Load Admin User Details
   const loadUserData = async () => {
     try {
       const response = await getProfile();
       if (response.success && response.user) {
-        // If regular USER role, redirect straight to /profile setup
         if (response.user.role === "USER") {
           router.replace("/profile");
         } else {
           setUser(response.user);
-          loadRecruitmentData();
+          await loadRecruitmentData();
+          await loadSystemConfigs();
+          await loadEvents();
         }
       } else {
         router.push("/login");
@@ -65,6 +192,7 @@ export default function DashboardPage() {
     }
   };
 
+  // Load Recruitment Applicants and Slots
   const loadRecruitmentData = async () => {
     setRecruitmentLoading(true);
     try {
@@ -79,10 +207,10 @@ export default function DashboardPage() {
       const slotsRes = await fetch("/api/recruitment/admin/slots");
       const slotsData = await slotsRes.json();
       if (slotsData.success && slotsData.slots) {
-        const slotList = slotsData.slots;
-        setTotalSlots(slotList.length);
+        setAllSlots(slotsData.slots);
+        setTotalSlots(slotsData.slots.length);
         let booked = 0;
-        slotList.forEach((s: any) => {
+        slotsData.slots.forEach((s: any) => {
           booked += s.students ? s.students.length : 0;
         });
         setBookedSpots(booked);
@@ -91,6 +219,51 @@ export default function DashboardPage() {
       console.error("Failed to load recruitment data", err);
     } finally {
       setRecruitmentLoading(false);
+    }
+  };
+
+  // Load System Scheduling Configurations
+  const loadSystemConfigs = async () => {
+    try {
+      const res = await fetch("/api/admin/config");
+      const data = await res.json();
+      if (data.success && data.configs) {
+        const formDoc = data.configs.find((c: any) => c.key === "interviewForm");
+        if (formDoc && formDoc.value) {
+          setFormMode(formDoc.value.mode || "MANUAL");
+          setFormIsLive(formDoc.value.isLive !== false);
+          if (formDoc.value.start) setFormStart(new Date(formDoc.value.start).toISOString().slice(0, 16));
+          if (formDoc.value.end) setFormEnd(new Date(formDoc.value.end).toISOString().slice(0, 16));
+        }
+        const bookingDoc = data.configs.find((c: any) => c.key === "slotBooking");
+        if (bookingDoc && bookingDoc.value) {
+          setBookingMode(bookingDoc.value.mode || "MANUAL");
+          setBookingIsLive(bookingDoc.value.isLive !== false);
+          if (bookingDoc.value.start) setBookingStart(new Date(bookingDoc.value.start).toISOString().slice(0, 16));
+          if (bookingDoc.value.end) setBookingEnd(new Date(bookingDoc.value.end).toISOString().slice(0, 16));
+        }
+        setTimeout(() => {
+          isInitialized.current = true;
+        }, 100);
+      } else {
+        isInitialized.current = true;
+      }
+    } catch (err) {
+      console.error("Failed to load configs", err);
+      isInitialized.current = true;
+    }
+  };
+
+  // Load Events from database
+  const loadEvents = async () => {
+    try {
+      const res = await fetch("/api/events");
+      const data = await res.json();
+      if (data.success && data.events) {
+        setAllEvents(data.events);
+      }
+    } catch (err) {
+      console.error("Failed to load events", err);
     }
   };
 
@@ -111,6 +284,7 @@ export default function DashboardPage() {
     }
   };
 
+  // Batch generate slots
   const handleGenerateSlots = async (e: React.FormEvent) => {
     e.preventDefault();
     setGenLoading(true);
@@ -127,6 +301,7 @@ export default function DashboardPage() {
           startTime,
           endTime,
           duration: Number(duration),
+          maxStudents: Number(maxStudentsInput),
         }),
       });
       const data = await res.json();
@@ -134,7 +309,7 @@ export default function DashboardPage() {
         setGenSuccess(data.message);
         setStartDate("");
         setEndDate("");
-        loadRecruitmentData();
+        await loadRecruitmentData();
       } else {
         setGenError(data.message || "Failed to generate slots.");
       }
@@ -145,6 +320,59 @@ export default function DashboardPage() {
     }
   };
 
+  // Toggle Slot Active Status
+  const handleToggleSlotActive = async (slotId: string, currentActive: boolean) => {
+    try {
+      const res = await fetch("/api/recruitment/admin/slots", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: slotId, isActive: !currentActive }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        await loadRecruitmentData();
+      }
+    } catch (err) {
+      console.error("Failed to toggle slot activity", err);
+    }
+  };
+
+  // Modify Slot Capacity
+  const handleUpdateSlotCapacity = async (slotId: string, capacity: number) => {
+    try {
+      const res = await fetch("/api/recruitment/admin/slots", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: slotId, maxStudents: capacity }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        await loadRecruitmentData();
+      }
+    } catch (err) {
+      console.error("Failed to update slot capacity", err);
+    }
+  };
+
+  // Delete Individual Slot
+  const handleDeleteSlot = async (slotId: string) => {
+    if (!confirm("Are you sure you want to delete this specific time slot?")) return;
+    try {
+      const res = await fetch(`/api/recruitment/admin/slots?id=${slotId}`, {
+        method: "DELETE",
+      });
+      const data = await res.json();
+      if (data.success) {
+        await loadRecruitmentData();
+      } else {
+        alert(data.message || "Failed to delete slot");
+      }
+    } catch (err) {
+      console.error("Failed to delete slot", err);
+    }
+  };
+
+  // Reset entire recruitment DB
   const handleResetRecruitment = async () => {
     if (!confirm("⚠️ WARNING: This will permanently delete all slots and interview applications in the database, resetting all candidates. Continue?")) return;
 
@@ -169,6 +397,127 @@ export default function DashboardPage() {
     }
   };
 
+  // Save scheduling timelines config
+  const handleSaveConfigs = async () => {
+    setConfigsLoading(true);
+    setConfigsSuccess(null);
+    setConfigsError(null);
+    try {
+      const formValue = {
+        mode: formMode,
+        isLive: formIsLive,
+        start: formStart ? new Date(formStart).toISOString() : null,
+        end: formEnd ? new Date(formEnd).toISOString() : null,
+      };
+
+      const bookingValue = {
+        mode: bookingMode,
+        isLive: bookingIsLive,
+        start: bookingStart ? new Date(bookingStart).toISOString() : null,
+        end: bookingEnd ? new Date(bookingEnd).toISOString() : null,
+      };
+
+      // Save Form config
+      const resForm = await fetch("/api/admin/config", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ key: "interviewForm", value: formValue }),
+      });
+      const formResData = await resForm.json();
+
+      // Save Booking config
+      const resBooking = await fetch("/api/admin/config", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ key: "slotBooking", value: bookingValue }),
+      });
+      const bookingResData = await resBooking.json();
+
+      if (formResData.success && bookingResData.success) {
+        setConfigsSuccess("All scheduling system configurations saved successfully.");
+      } else {
+        setConfigsError("One or more configurations failed to update.");
+      }
+    } catch (err) {
+      setConfigsError("Network error: Failed to save configurations.");
+    } finally {
+      setConfigsLoading(false);
+    }
+  };
+
+  // Event Manager CRUD Operations
+  const handleSaveEvent = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setEventLoading(true);
+    setEventSuccess(null);
+    setEventError(null);
+    try {
+      const isEdit = !!eventForm.id;
+      const res = await fetch("/api/admin/events", {
+        method: isEdit ? "PUT" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(isEdit ? eventForm : { ...eventForm, id: undefined }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setEventSuccess(isEdit ? "Event updated successfully!" : "Event created successfully!");
+        setEventForm({
+          id: "",
+          title: "",
+          description: "",
+          category: "Event",
+          dateText: "",
+          timeText: "",
+          prizePool: "",
+          teamSize: "",
+          entryFee: "",
+          venue: "VIT Pune",
+          type: "PREVIOUS",
+        });
+        loadEvents();
+      } else {
+        setEventError(data.message || "Failed to save event.");
+      }
+    } catch (err) {
+      setEventError("Network error: Failed to save event.");
+    } finally {
+      setEventLoading(false);
+    }
+  };
+
+  const handleEditEventClick = (event: any) => {
+    setEventForm({
+      id: event._id,
+      title: event.title,
+      description: event.description,
+      category: event.category || "Event",
+      dateText: event.dateText,
+      timeText: event.timeText || "",
+      prizePool: event.prizePool || "",
+      teamSize: event.teamSize || "",
+      entryFee: event.entryFee || "",
+      venue: event.venue || "VIT Pune",
+      type: event.type || "PREVIOUS",
+    });
+    // Scroll event form into view
+    document.getElementById("eventFormContainer")?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  const handleDeleteEvent = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this event?")) return;
+    try {
+      const res = await fetch(`/api/admin/events?id=${id}`, { method: "DELETE" });
+      const data = await res.json();
+      if (data.success) {
+        loadEvents();
+      } else {
+        alert(data.message || "Failed to delete event");
+      }
+    } catch (err) {
+      console.error("Failed to delete event", err);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center">
@@ -185,412 +534,830 @@ export default function DashboardPage() {
   return (
     <div className="p-6 relative z-10 min-h-[calc(100vh-4rem)]">
       {/* Top Banner Navigation */}
-      <header className="max-w-6xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between pb-6 border-b border-border/50 mb-8 gap-4">
+      <header className="max-w-6xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between pb-6 border-b border-border/50 mb-6 gap-4">
         <div>
           <h1 className="text-xl font-bold tracking-tight text-foreground uppercase flex items-center gap-2">
             <ShieldAlert className="h-5 w-5 text-primary" /> Club CMS Portal & Admin Console
           </h1>
-          <p className="text-xs text-muted-foreground">Admin: {user.name}</p>
+          <p className="text-xs text-muted-foreground">Logged in: {user.name} ({user.email})</p>
         </div>
 
         <div className="flex items-center gap-3 flex-wrap">
           <Link href="/profile">
-            <Button variant="outline" size="sm" className="gap-2">
-              <User className="h-4 w-4" /> Profile Setup
-            </Button>
-          </Link>
-          
-          <Link href="/admin/users">
-            <Button variant="outline" size="sm" className="gap-2">
-              <Users className="h-4 w-4" /> Manage Users
+            <Button variant="outline" size="sm" className="gap-2 text-xs">
+              <User className="h-3.5 w-3.5" /> Profile Setup
             </Button>
           </Link>
 
-          <Button variant="destructive" size="sm" onClick={handleLogout} className="gap-2">
-            <LogOut className="h-4 w-4" /> Log out
+          <Link href="/admin/users">
+            <Button variant="outline" size="sm" className="gap-2 text-xs">
+              <Users className="h-3.5 w-3.5" /> Users List
+            </Button>
+          </Link>
+
+          <Button variant="destructive" size="sm" onClick={handleLogout} className="gap-2 text-xs">
+            <LogOut className="h-3.5 w-3.5" /> Log out
           </Button>
         </div>
       </header>
 
+      {/* Sleek Tabs Navigation bar */}
+      <div className="max-w-6xl mx-auto flex gap-2 border-b border-border/40 pb-3 mb-6 overflow-x-auto">
+        {[
+          { id: "overview", label: "Overview & Applicants", icon: ListFilter },
+          { id: "slots", label: "Interview Slots", icon: CalendarPlus },
+          { id: "controls", label: "Control Center", icon: Settings },
+          { id: "events", label: "Event Manager", icon: BookOpen }
+        ].map((t) => {
+          const Icon = t.icon;
+          return (
+            <button
+              key={t.id}
+              onClick={() => setActiveTab(t.id as any)}
+              className={`flex items-center gap-2 px-4 py-2 text-xs font-bold uppercase rounded-lg border transition-all shrink-0 ${activeTab === t.id
+                ? "bg-primary text-black border-primary font-bold shadow-md shadow-primary/20"
+                : "bg-card/40 text-muted-foreground border-border hover:text-foreground hover:bg-muted/10"
+                }`}
+            >
+              <Icon className="h-4 w-4" />
+              {t.label}
+            </button>
+          );
+        })}
+      </div>
+
       {/* Main Container */}
-      <main className="max-w-6xl mx-auto space-y-8">
-        
-        {/* Welcome Card & Statistics Overview Grid */}
-        <div className="grid lg:grid-cols-[1fr_2fr] gap-6">
-          
-          {/* Welcome User Card */}
-          <Card className="border border-border/60 bg-card/40 backdrop-blur-md flex flex-col justify-between">
-            <CardContent className="p-6 flex flex-col items-center text-center gap-4">
-              <div className="h-20 w-20 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-bold text-3xl">
-                {user.avatar ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={user.avatar} alt={user.name} className="h-full w-full object-cover rounded-full" />
-                ) : (
-                  user.name.split(" ").map((n) => n[0]).join("").toUpperCase()
-                )}
+      <main className="max-w-6xl mx-auto space-y-6">
+
+        {/* TAB 1: OVERVIEW & APPLICANTS */}
+        {activeTab === "overview" && (
+          <div className="space-y-6">
+            {/* Quick Stats Grid */}
+            <div className="grid grid-cols-3 gap-4">
+              <div className="p-4 border border-border/60 bg-card/20 rounded-xl text-center">
+                <span className="text-[10px] text-muted-foreground block font-bold uppercase tracking-wider">Form Submissions</span>
+                <span className="text-2xl font-bold text-primary">{applicants.length}</span>
               </div>
-              <div>
-                <h2 className="text-xl font-bold text-foreground">{user.name}</h2>
-                <p className="text-xs text-muted-foreground">{user.email}</p>
-                <div className="flex items-center gap-2 mt-2 justify-center">
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-primary/20 text-primary uppercase border border-primary/25">
-                    {user.role} Account
-                  </span>
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-green-500/20 text-green-400 uppercase border border-green-500/25">
-                    {user.status}
-                  </span>
-                </div>
+              <div className="p-4 border border-border/60 bg-card/20 rounded-xl text-center">
+                <span className="text-[10px] text-muted-foreground block font-bold uppercase tracking-wider">Total Slots Generated</span>
+                <span className="text-2xl font-bold text-foreground">{totalSlots}</span>
               </div>
-            </CardContent>
-            <div className="p-4 border-t border-border/40 text-center text-[10px] text-muted-foreground">
-              Last Login: {user.lastLogin ? new Date(user.lastLogin).toLocaleString() : "First Session"}
+              <div className="p-4 border border-border/60 bg-card/20 rounded-xl text-center">
+                <span className="text-[10px] text-muted-foreground block font-bold uppercase tracking-wider">Booked Spots</span>
+                <span className="text-2xl font-bold text-foreground">{bookedSpots}</span>
+              </div>
             </div>
-          </Card>
 
-          {/* Quick Stats Grid */}
-          <div className="grid grid-cols-2 gap-4">
-            <Card className="border border-border/60 bg-card/30 flex flex-col justify-between">
-              <CardHeader className="p-4 flex flex-row items-center justify-between space-y-0 pb-2">
-                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">CMS Admins</span>
-                <Users className="h-4 w-4 text-primary" />
-              </CardHeader>
-              <CardContent className="p-4 pt-0">
-                <div className="text-2xl font-bold">1</div>
-                <p className="text-[9px] text-muted-foreground">Active Admin Sessions</p>
-              </CardContent>
-            </Card>
-
-            <Card className="border border-border/60 bg-card/30 flex flex-col justify-between">
-              <CardHeader className="p-4 flex flex-row items-center justify-between space-y-0 pb-2">
-                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Total Events</span>
-                <Calendar className="h-4 w-4 text-primary" />
-              </CardHeader>
-              <CardContent className="p-4 pt-0">
-                <div className="text-2xl font-bold">2</div>
-                <p className="text-[9px] text-muted-foreground">Upcoming Workshops</p>
-              </CardContent>
-            </Card>
-
-            <Card className="border border-border/60 bg-card/30 flex flex-col justify-between">
-              <CardHeader className="p-4 flex flex-row items-center justify-between space-y-0 pb-2">
-                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Published Blogs</span>
-                <BookOpen className="h-4 w-4 text-primary" />
-              </CardHeader>
-              <CardContent className="p-4 pt-0">
-                <div className="text-2xl font-bold">4</div>
-                <p className="text-[9px] text-muted-foreground">Active News items</p>
-              </CardContent>
-            </Card>
-
-            <Card className="border border-border/60 bg-card/30 flex flex-col justify-between">
-              <CardHeader className="p-4 flex flex-row items-center justify-between space-y-0 pb-2">
-                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Projects</span>
-                <Layout className="h-4 w-4 text-primary" />
-              </CardHeader>
-              <CardContent className="p-4 pt-0">
-                <div className="text-2xl font-bold">8</div>
-                <p className="text-[9px] text-muted-foreground">Active R&D Showcases</p>
-              </CardContent>
-            </Card>
-          </div>
-
-        </div>
-
-
-        {/* CMS Modules Grid */}
-        <div>
-          <h3 className="text-sm font-bold text-foreground uppercase tracking-wider mb-4">
-            Available CMS Modules
-          </h3>
-          <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-6">
-            <Card className="hover:border-primary/40 transition-colors cursor-pointer bg-card/30">
-              <CardHeader className="p-4 flex flex-row items-center gap-3.5 space-y-0">
-                <div className="p-2.5 rounded-lg bg-blue-500/10 border border-blue-500/20 text-blue-400">
-                  <Calendar className="h-5 w-5" />
-                </div>
+            {/* Applicants Table */}
+            <Card className="border border-border/60 bg-card/40 backdrop-blur-md overflow-hidden">
+              <CardHeader className="pb-3 border-b border-border/40 flex flex-row items-center justify-between">
                 <div>
-                  <h4 className="font-bold text-sm">Events</h4>
-                  <p className="text-xs text-muted-foreground">Manage schedule & forms</p>
+                  <CardTitle className="text-base flex items-center gap-1.5 font-bold uppercase text-foreground">
+                    <ListFilter className="h-4 w-4 text-primary" /> Application Submissions
+                  </CardTitle>
+                  <CardDescription className="text-xs">Candidates who submitted their Execom interview questionnaires.</CardDescription>
                 </div>
-              </CardHeader>
-            </Card>
-
-            <Card className="hover:border-primary/40 transition-colors cursor-pointer bg-card/30">
-              <CardHeader className="p-4 flex flex-row items-center gap-3.5 space-y-0">
-                <div className="p-2.5 rounded-lg bg-green-500/10 border border-green-500/20 text-green-400">
-                  <BookOpen className="h-5 w-5" />
-                </div>
-                <div>
-                  <h4 className="font-bold text-sm">Blogs</h4>
-                  <p className="text-xs text-muted-foreground">Write news & updates</p>
-                </div>
-              </CardHeader>
-            </Card>
-
-            <Card className="hover:border-primary/40 transition-colors cursor-pointer bg-card/30">
-              <CardHeader className="p-4 flex flex-row items-center gap-3.5 space-y-0">
-                <div className="p-2.5 rounded-lg bg-purple-500/10 border border-purple-500/20 text-purple-400">
-                  <ImageIcon className="h-5 w-5" />
-                </div>
-                <div>
-                  <h4 className="font-bold text-sm">Gallery</h4>
-                  <p className="text-xs text-muted-foreground">Upload event images</p>
-                </div>
-              </CardHeader>
-            </Card>
-
-            <Card className="hover:border-primary/40 transition-colors cursor-pointer bg-card/30">
-              <CardHeader className="p-4 flex flex-row items-center gap-3.5 space-y-0">
-                <div className="p-2.5 rounded-lg bg-orange-500/10 border border-orange-500/20 text-orange-400">
-                  <Settings className="h-5 w-5" />
-                </div>
-                <div>
-                  <h4 className="font-bold text-sm">Settings</h4>
-                  <p className="text-xs text-muted-foreground">Website parameters</p>
-                </div>
-              </CardHeader>
-            </Card>
-          </div>
-        </div>
-
-        {/* Administration Links section */}
-        <div>
-          <h3 className="text-sm font-bold text-foreground uppercase tracking-wider mb-4">
-            Authorized Modules Administration
-          </h3>
-          <div className="grid md:grid-cols-2 gap-6">
-            <Card className="border border-border/60 bg-card/40">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base flex items-center gap-2">
-                  <Users className="h-4 w-4 text-primary" /> User Accounts Control
-                </CardTitle>
-                <CardDescription>
-                  Provision new club accounts, change security roles, and toggle active/inactive status levels.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="pt-0">
-                <Link href="/admin/users">
-                  <Button variant="outline" size="sm" className="gap-2">
-                    Configure User Table <ArrowRight className="h-4 w-4" />
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
-
-            <Card className="border border-border/60 bg-card/40">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base flex items-center gap-2">
-                  <Settings className="h-4 w-4 text-primary" /> Global CMS Parameters
-                </CardTitle>
-                <CardDescription>
-                  Configure system settings, metadata parameters, API variables, and integrations.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="pt-0">
-                <Button variant="outline" size="sm" className="gap-2" disabled>
-                  Settings Offline
+                <Button variant="outline" size="icon" onClick={loadRecruitmentData} disabled={recruitmentLoading} className="h-8 w-8">
+                  <RefreshCw className={`h-4 w-4 ${recruitmentLoading ? "animate-spin" : ""}`} />
                 </Button>
+              </CardHeader>
+              <div className="overflow-x-auto w-full text-xs">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="border-b border-border/40 bg-muted/20">
+                      <th className="p-3.5 font-bold text-muted-foreground uppercase text-[10px] tracking-wider">Candidate Profile</th>
+                      <th className="p-3.5 font-bold text-muted-foreground uppercase text-[10px] tracking-wider">Branch Details</th>
+                      <th className="p-3.5 font-bold text-muted-foreground uppercase text-[10px] tracking-wider">Applied Domains</th>
+                      <th className="p-3.5 font-bold text-muted-foreground uppercase text-[10px] tracking-wider">Submitted On</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border/30">
+                    {applicants.length === 0 ? (
+                      <tr>
+                        <td colSpan={4} className="p-8 text-center text-muted-foreground font-semibold">
+                          No candidate questionnaires submitted yet.
+                        </td>
+                      </tr>
+                    ) : (
+                      applicants.map((app) => (
+                        <tr key={app._id} className="hover:bg-muted/10 transition-colors">
+                          <td className="p-3.5">
+                            <p className="font-bold text-foreground text-sm">{app.fullname}</p>
+                            <p className="text-[10px] text-muted-foreground font-mono">{app.email}</p>
+                            <p className="text-[10px] text-primary mt-1">{app.phone_number}</p>
+                            <div className="flex gap-3 mt-1.5">
+                              {app.github && (
+                                <a href={app.github.startsWith("http") ? app.github : `https://${app.github}`} target="_blank" rel="noopener noreferrer" className="text-[10px] text-primary hover:underline font-semibold bg-primary/10 border border-primary/20 px-1.5 py-0.5 rounded">
+                                  GitHub
+                                </a>
+                              )}
+                              {app.linkedin && (
+                                <a href={app.linkedin.startsWith("http") ? app.linkedin : `https://${app.linkedin}`} target="_blank" rel="noopener noreferrer" className="text-[10px] text-primary hover:underline font-semibold bg-primary/10 border border-primary/20 px-1.5 py-0.5 rounded">
+                                  LinkedIn
+                                </a>
+                              )}
+                            </div>
+                          </td>
+                          <td className="p-3.5 font-medium text-foreground text-sm leading-relaxed">{app.branch}</td>
+                          <td className="p-3.5">
+                            <div className="flex flex-wrap gap-1">
+                              {app.domain.map((d) => (
+                                <span key={d} className="px-1.5 py-0.5 rounded bg-primary/10 text-primary text-[9px] border border-primary/10 font-bold uppercase tracking-wider">
+                                  {d}
+                                </span>
+                              ))}
+                            </div>
+                          </td>
+                          <td className="p-3.5 text-muted-foreground font-mono text-[10px]">
+                            {new Date(app.createdAt).toLocaleDateString("en-IN")} at {new Date(app.createdAt).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </Card>
+          </div>
+        )}
+
+        {/* TAB 2: INTERVIEW SLOTS */}
+        {activeTab === "slots" && (
+          <div className="grid lg:grid-cols-[1fr_2fr] gap-6 items-start">
+            {/* Slot Generator Form Card */}
+            <div className="space-y-6">
+              <Card className="border border-border/60 bg-card/40 backdrop-blur-md">
+                <CardHeader className="pb-3 border-b border-border/40">
+                  <CardTitle className="text-base flex items-center gap-2 uppercase font-bold text-foreground">
+                    <CalendarPlus className="h-5 w-5 text-primary" /> Generate Time Slots
+                  </CardTitle>
+                  <CardDescription className="text-xs">Generate interview slots within a date and time range.</CardDescription>
+                </CardHeader>
+                <CardContent className="pt-4">
+                  <form onSubmit={handleGenerateSlots} className="space-y-4">
+                    {genSuccess && (
+                      <div className="flex items-center gap-2.5 p-3 rounded-lg border border-green-500/25 bg-green-500/10 text-xs text-green-400">
+                        <CheckCircle2 className="h-4 w-4 shrink-0" />
+                        <span>{genSuccess}</span>
+                      </div>
+                    )}
+
+                    {genError && (
+                      <div className="flex items-center gap-2.5 p-3 rounded-lg border border-destructive/20 bg-destructive/10 text-xs text-destructive-foreground">
+                        <AlertCircle className="h-4 w-4 shrink-0" />
+                        <span>{genError}</span>
+                      </div>
+                    )}
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <Label htmlFor="startDate" className="text-xs">Start Date</Label>
+                        <Input
+                          id="startDate"
+                          type="date"
+                          value={startDate}
+                          onChange={(e) => setStartDate(e.target.value)}
+                          required
+                          disabled={genLoading}
+                          className="h-9 text-xs"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label htmlFor="endDate" className="text-xs">End Date</Label>
+                        <Input
+                          id="endDate"
+                          type="date"
+                          value={endDate}
+                          onChange={(e) => setEndDate(e.target.value)}
+                          required
+                          disabled={genLoading}
+                          className="h-9 text-xs"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <Label htmlFor="startTime" className="text-xs">Start Time</Label>
+                        <Input
+                          id="startTime"
+                          type="time"
+                          value={startTime}
+                          onChange={(e) => setStartTime(e.target.value)}
+                          required
+                          disabled={genLoading}
+                          className="h-9 text-xs"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label htmlFor="endTime" className="text-xs">End Time</Label>
+                        <Input
+                          id="endTime"
+                          type="time"
+                          value={endTime}
+                          onChange={(e) => setEndTime(e.target.value)}
+                          required
+                          disabled={genLoading}
+                          className="h-9 text-xs"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <Label htmlFor="duration" className="text-xs">Slot Duration</Label>
+                        <Input
+                          id="duration"
+                          type="number"
+                          value={duration}
+                          onChange={(e) => setDuration(Number(e.target.value))}
+                          required
+                          min={15}
+                          max={180}
+                          disabled={genLoading}
+                          className="h-9 text-xs"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label htmlFor="maxStudents" className="text-xs">Capacity Per Slot</Label>
+                        <Input
+                          id="maxStudents"
+                          type="number"
+                          value={maxStudentsInput}
+                          onChange={(e) => setMaxStudentsInput(Number(e.target.value))}
+                          required
+                          min={1}
+                          max={10}
+                          disabled={genLoading}
+                          className="h-9 text-xs"
+                        />
+                      </div>
+                    </div>
+
+                    <Button type="submit" disabled={genLoading} className="w-full h-10 flex justify-center items-center gap-2 text-xs font-bold uppercase mt-2">
+                      {genLoading && <Loader2 className="h-4 w-4 animate-spin" />}
+                      Batch Generate Slots 📅
+                    </Button>
+                  </form>
+                </CardContent>
+              </Card>
+
+              {/* Danger Zone */}
+              <Card className="border border-destructive/20 bg-destructive/5">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-bold text-destructive uppercase tracking-wider">Danger Reset Module</CardTitle>
+                  <CardDescription className="text-[10px]">Resets slots, clears candidates list, and updates user verification states.</CardDescription>
+                </CardHeader>
+                <CardContent className="pt-2">
+                  <Button variant="destructive" size="sm" onClick={handleResetRecruitment} disabled={recruitmentLoading} className="gap-2 w-full text-xs font-bold uppercase">
+                    <Trash2 className="h-3.5 w-3.5" /> Purge Recruitment DB
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* List of Time Slots Table */}
+            <Card className="border border-border/60 bg-card/40 backdrop-blur-md overflow-hidden">
+              <CardHeader className="pb-3 border-b border-border/40">
+                <CardTitle className="text-base flex items-center gap-2 uppercase font-bold text-foreground">
+                  <Calendar className="h-4 w-4 text-primary" /> Generated Slots Catalog
+                </CardTitle>
+                <CardDescription className="text-xs">Disable/enable visibility or modify capacity limits of individual slots.</CardDescription>
+              </CardHeader>
+
+              <div className="overflow-y-auto max-h-[620px] w-full text-xs">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="border-b border-border/40 bg-muted/20">
+                      <th className="p-3 font-bold text-muted-foreground uppercase text-[10px] tracking-wider">Slot Time Block</th>
+                      <th className="p-3 font-bold text-muted-foreground uppercase text-[10px] tracking-wider text-center">Booked Users</th>
+                      <th className="p-3 font-bold text-muted-foreground uppercase text-[10px] tracking-wider text-center">Max Capacity</th>
+                      <th className="p-3 font-bold text-muted-foreground uppercase text-[10px] tracking-wider text-center">Status Visibility</th>
+                      <th className="p-3 font-bold text-muted-foreground uppercase text-[10px] tracking-wider text-right">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border/30">
+                    {allSlots.length === 0 ? (
+                      <tr>
+                        <td colSpan={5} className="p-8 text-center text-muted-foreground font-semibold">
+                          No interview slots generated. Use the generator tool to create time blocks.
+                        </td>
+                      </tr>
+                    ) : (
+                      allSlots.map((slot) => {
+                        const dateStr = new Date(slot.dateTime).toLocaleDateString("en-IN", {
+                          weekday: "short",
+                          day: "numeric",
+                          month: "short"
+                        });
+                        const startStr = new Date(slot.dateTime).toLocaleTimeString("en-IN", {
+                          hour: "2-digit",
+                          minute: "2-digit"
+                        });
+                        const endStr = new Date(slot.endDateTime).toLocaleTimeString("en-IN", {
+                          hour: "2-digit",
+                          minute: "2-digit"
+                        });
+
+                        return (
+                          <tr key={slot._id} className="hover:bg-muted/5 transition-colors">
+                            <td className="p-3">
+                              <span className="font-bold text-foreground block text-sm">{dateStr}</span>
+                              <span className="text-[10px] text-muted-foreground font-mono">{startStr} - {endStr}</span>
+                            </td>
+                            <td className="p-3 text-center">
+                              <span className="font-bold text-foreground text-sm bg-muted/40 border border-border px-2 py-0.5 rounded">
+                                {slot.students ? slot.students.length : 0}
+                              </span>
+                            </td>
+                            <td className="p-3 text-center">
+                              <div className="inline-flex items-center gap-1.5">
+                                <input
+                                  type="number"
+                                  min={1}
+                                  max={10}
+                                  defaultValue={slot.maxStudents}
+                                  onBlur={(e) => handleUpdateSlotCapacity(slot._id, Number(e.target.value))}
+                                  className="w-12 h-7 rounded border border-border bg-background px-1.5 py-0.5 text-center font-bold text-xs"
+                                />
+                              </div>
+                            </td>
+                            <td className="p-3 text-center">
+                              <button
+                                onClick={() => handleToggleSlotActive(slot._id, slot.isActive)}
+                                className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold border transition-colors ${slot.isActive
+                                  ? "bg-green-500/10 text-green-400 border-green-500/20 hover:bg-green-500/20"
+                                  : "bg-destructive/10 text-destructive border-destructive/20 hover:bg-destructive/20"
+                                  }`}
+                              >
+                                {slot.isActive ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
+                                {slot.isActive ? "VISIBLE" : "HIDDEN"}
+                              </button>
+                            </td>
+                            <td className="p-3 text-right">
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={() => handleDeleteSlot(slot._id)}
+                                className="h-7 w-7 text-destructive hover:text-white hover:bg-destructive"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </Button>
+                            </td>
+                          </tr>
+                        );
+                      })
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </Card>
+          </div>
+        )}
+
+        {/* TAB 3: CONTROL CENTER (SCHEDULING TIMELINES) */}
+        {activeTab === "controls" && (
+          <div className="max-w-3xl mx-auto space-y-6">
+            <Card className="border border-border/60 bg-card/40 backdrop-blur-md">
+              <CardHeader className="pb-3 border-b border-border/40">
+                <CardTitle className="text-base flex items-center gap-2 uppercase font-bold text-foreground">
+                  <Clock className="h-5 w-5 text-primary" /> Active Timeline Controls
+                </CardTitle>
+                <CardDescription className="text-xs">Configure manual start/stop override or automatic date-time schedules for candidates form and slot booking.</CardDescription>
+              </CardHeader>
+              <CardContent className="p-6 space-y-6">
+
+                {configsSuccess && (
+                  <div className="flex items-center gap-2.5 p-3 rounded-lg border border-green-500/25 bg-green-500/10 text-xs text-green-400">
+                    <CheckCircle2 className="h-4 w-4 shrink-0" />
+                    <span>{configsSuccess}</span>
+                  </div>
+                )}
+
+                {configsError && (
+                  <div className="flex items-center gap-2.5 p-3 rounded-lg border border-destructive/20 bg-destructive/10 text-xs text-destructive-foreground">
+                    <AlertCircle className="h-4 w-4 shrink-0" />
+                    <span>{configsError}</span>
+                  </div>
+                )}
+
+                {/* 1. Interview Questionnaire Section */}
+                <div className="border border-border/40 rounded-xl p-4 bg-muted/5 space-y-4">
+                  <div className="flex items-center justify-between border-b border-border/20 pb-3">
+                    <h3 className="font-bold text-sm text-foreground uppercase tracking-wider">Interview Questionnaire Form</h3>
+                    <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold border ${formIsLive ? "bg-green-500/10 text-green-400 border-green-500/20" : "bg-destructive/10 text-destructive border-destructive/20"}`}>
+                      {formIsLive ? "LIVE ENABLED" : "STOPPED / CLOSED"}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">Status Control Mode</Label>
+                      <select
+                        value={formMode}
+                        onChange={(e) => setFormMode(e.target.value as any)}
+                        className="flex h-13 w-full rounded-md border border-border bg-background px-3 py-1 text-xs font-semibold focus-visible:outline-none"
+                      >
+                        <option value="MANUAL">MANUAL OVERRIDE</option>
+                        <option value="AUTOMATIC">AUTOMATIC SCHEDULE</option>
+                      </select>
+                    </div>
+
+                    {formMode === "MANUAL" ? (
+                      <div className="space-y-1.5">
+                        <Label className="text-xs">Live Status Switch</Label>
+                        <div className="flex gap-2">
+                          <Button
+                            type="button"
+                            variant={formIsLive ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => setFormIsLive(true)}
+                            className="flex-1 text-xs"
+                          >
+                            Start Submissions
+                          </Button>
+                          <Button
+                            type="button"
+                            variant={!formIsLive ? "destructive" : "outline"}
+                            size="sm"
+                            onClick={() => setFormIsLive(false)}
+                            className="flex-1 text-xs"
+                          >
+                            Stop Submissions
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-2 gap-2">
+                        <div className="space-y-1">
+                          <Label className="text-[10px]">Start Time</Label>
+                          <Input
+                            type="datetime-local"
+                            value={formStart}
+                            onChange={(e) => setFormStart(e.target.value)}
+                            className="h-9 text-xs px-2"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-[10px]">End Time</Label>
+                          <Input
+                            type="datetime-local"
+                            value={formEnd}
+                            onChange={(e) => setFormEnd(e.target.value)}
+                            className="h-9 text-xs px-2"
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* 2. Slot Booking Section */}
+                <div className="border border-border/40 rounded-xl p-4 bg-muted/5 space-y-4">
+                  <div className="flex items-center justify-between border-b border-border/20 pb-3">
+                    <h3 className="font-bold text-sm text-foreground uppercase tracking-wider">Interview Slot Booking Portal</h3>
+                    <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold border ${bookingIsLive ? "bg-green-500/10 text-green-400 border-green-500/20" : "bg-destructive/10 text-destructive border-destructive/20"}`}>
+                      {bookingIsLive ? "LIVE ENABLED" : "STOPPED / CLOSED"}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">Status Control Mode</Label>
+                      <select
+                        value={bookingMode}
+                        onChange={(e) => setBookingMode(e.target.value as any)}
+                        className="flex h-13 w-full rounded-md border border-border bg-background px-3 py-1 text-xs font-semibold focus-visible:outline-none"
+                      >
+                        <option value="MANUAL">MANUAL OVERRIDE</option>
+                        <option value="AUTOMATIC">AUTOMATIC SCHEDULE</option>
+                      </select>
+                    </div>
+
+                    {bookingMode === "MANUAL" ? (
+                      <div className="space-y-1.5">
+                        <Label className="text-xs">Live Status Switch</Label>
+                        <div className="flex gap-2">
+                          <Button
+                            type="button"
+                            variant={bookingIsLive ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => setBookingIsLive(true)}
+                            className="flex-1 text-xs"
+                          >
+                            Open Booking
+                          </Button>
+                          <Button
+                            type="button"
+                            variant={!bookingIsLive ? "destructive" : "outline"}
+                            size="sm"
+                            onClick={() => setBookingIsLive(false)}
+                            className="flex-1 text-xs"
+                          >
+                            Close Booking
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-2 gap-2">
+                        <div className="space-y-1">
+                          <Label className="text-[10px]">Start Time</Label>
+                          <Input
+                            type="datetime-local"
+                            value={bookingStart}
+                            onChange={(e) => setBookingStart(e.target.value)}
+                            className="h-9 text-xs px-2"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-[10px]">End Time</Label>
+                          <Input
+                            type="datetime-local"
+                            value={bookingEnd}
+                            onChange={(e) => setBookingEnd(e.target.value)}
+                            className="h-9 text-xs px-2"
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Submit Configurations */}
+                <Button onClick={handleSaveConfigs} disabled={configsLoading} className="w-full h-10 gap-2 font-bold uppercase text-xs">
+                  {configsLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                  Save Timeline Configurations (Auto-saves in background) 💾
+                </Button>
+
               </CardContent>
             </Card>
           </div>
-        </div>
+        )}
 
-        {/* RECRUITMENT MANAGEMENT SECTION */}
-        <div>
-          <h3 className="text-sm font-bold text-foreground uppercase tracking-wider mb-4 flex items-center justify-between">
-            <span>Recruitment Slots & Applicants Console</span>
-            <Button variant="outline" size="icon" onClick={loadRecruitmentData} disabled={recruitmentLoading} className="h-7 w-7">
-              <RefreshCw className={`h-3 w-3 ${recruitmentLoading ? "animate-spin" : ""}`} />
-            </Button>
-          </h3>
+        {/* TAB 4: EVENT MANAGER */}
+        {activeTab === "events" && (
+          <div className="grid lg:grid-cols-[1fr_2.2fr] gap-6 items-start">
 
-          <div className="grid lg:grid-cols-[1.2fr_1.8fr] gap-6">
-            
-            {/* Slot Generator Form */}
-            <Card className="border border-border/60 bg-card/40 backdrop-blur-md">
-              <CardHeader>
-                <div className="flex items-center gap-2 text-primary">
-                  <CalendarPlus className="h-5 w-5" />
-                  <CardTitle className="text-base">Generate Time Slots</CardTitle>
-                </div>
-                <CardDescription>Generate interview slots within a date and time range.</CardDescription>
+            {/* Event Edit/Create Form Card */}
+            <Card id="eventFormContainer" className="border border-border/60 bg-card/40 backdrop-blur-md">
+              <CardHeader className="pb-3 border-b border-border/40">
+                <CardTitle className="text-base flex items-center gap-2 uppercase font-bold text-foreground">
+                  <Plus className="h-5 w-5 text-primary" /> {eventForm.id ? "Edit Event" : "Create Event"}
+                </CardTitle>
+                <CardDescription className="text-xs">Add new dynamic event highlighting parameters or modify previous events.</CardDescription>
               </CardHeader>
-              <CardContent>
-                <form onSubmit={handleGenerateSlots} className="space-y-4">
-                  {genSuccess && (
+              <CardContent className="pt-4">
+                <form onSubmit={handleSaveEvent} className="space-y-4">
+
+                  {eventSuccess && (
                     <div className="flex items-center gap-2.5 p-3 rounded-lg border border-green-500/25 bg-green-500/10 text-xs text-green-400">
-                      <span>{genSuccess}</span>
+                      <CheckCircle2 className="h-4 w-4 shrink-0" />
+                      <span>{eventSuccess}</span>
                     </div>
                   )}
 
-                  {genError && (
+                  {eventError && (
                     <div className="flex items-center gap-2.5 p-3 rounded-lg border border-destructive/20 bg-destructive/10 text-xs text-destructive-foreground">
-                      <span>{genError}</span>
+                      <AlertCircle className="h-4 w-4 shrink-0" />
+                      <span>{eventError}</span>
                     </div>
                   )}
+
+                  <div className="space-y-1">
+                    <Label htmlFor="eventTitle" className="text-xs">Event Title</Label>
+                    <Input
+                      id="eventTitle"
+                      type="text"
+                      placeholder="e.g. CodeZest'26"
+                      value={eventForm.title}
+                      onChange={(e) => setEventForm({ ...eventForm, title: e.target.value })}
+                      required
+                      disabled={eventLoading}
+                      className="h-9 text-xs"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <Label htmlFor="eventDesc" className="text-xs">Description</Label>
+                    <textarea
+                      id="eventDesc"
+                      rows={3}
+                      placeholder="Summary and outlines of the event..."
+                      value={eventForm.description}
+                      onChange={(e) => setEventForm({ ...eventForm, description: e.target.value })}
+                      required
+                      disabled={eventLoading}
+                      className="flex w-full rounded-md border border-border bg-background px-3 py-2 text-xs focus-visible:outline-none disabled:opacity-50"
+                    />
+                  </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1">
-                      <Label htmlFor="startDate">Start Date</Label>
+                      <Label htmlFor="eventCategory" className="text-xs">Category Tag</Label>
                       <Input
-                        id="startDate"
-                        type="date"
-                        value={startDate}
-                        onChange={(e) => setStartDate(e.target.value)}
-                        required
-                        disabled={genLoading}
+                        id="eventCategory"
+                        type="text"
+                        placeholder="e.g. Hackathon, Tech Talk"
+                        value={eventForm.category}
+                        onChange={(e) => setEventForm({ ...eventForm, category: e.target.value })}
+                        disabled={eventLoading}
+                        className="h-9 text-xs"
                       />
                     </div>
                     <div className="space-y-1">
-                      <Label htmlFor="endDate">End Date</Label>
-                      <Input
-                        id="endDate"
-                        type="date"
-                        value={endDate}
-                        onChange={(e) => setEndDate(e.target.value)}
-                        required
-                        disabled={genLoading}
-                      />
+                      <Label htmlFor="eventType" className="text-xs">Display Grid Section</Label>
+                      <select
+                        id="eventType"
+                        value={eventForm.type}
+                        onChange={(e) => setEventForm({ ...eventForm, type: e.target.value as any })}
+                        className="flex h-12 w-full rounded-md border border-border bg-background px-3 py-1 text-xs font-semibold focus-visible:outline-none"
+                      >
+                        <option value="UPCOMING">UPCOMING EVENTS</option>
+                        <option value="PREVIOUS">PREVIOUS EVENTS</option>
+                      </select>
                     </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1">
-                      <Label htmlFor="startTime">Start Time</Label>
+                      <Label htmlFor="eventDateText" className="text-xs">Date Label</Label>
                       <Input
-                        id="startTime"
-                        type="time"
-                        value={startTime}
-                        onChange={(e) => setStartTime(e.target.value)}
+                        id="eventDateText"
+                        type="text"
+                        placeholder="e.g. 13th March"
+                        value={eventForm.dateText}
+                        onChange={(e) => setEventForm({ ...eventForm, dateText: e.target.value })}
                         required
-                        disabled={genLoading}
+                        disabled={eventLoading}
+                        className="h-9 text-xs"
                       />
                     </div>
                     <div className="space-y-1">
-                      <Label htmlFor="endTime">End Time</Label>
+                      <Label htmlFor="eventTimeText" className="text-xs">Time / Mode Label</Label>
                       <Input
-                        id="endTime"
-                        type="time"
-                        value={endTime}
-                        onChange={(e) => setEndTime(e.target.value)}
-                        required
-                        disabled={genLoading}
+                        id="eventTimeText"
+                        type="text"
+                        placeholder="e.g. 1 PM, Offline"
+                        value={eventForm.timeText}
+                        onChange={(e) => setEventForm({ ...eventForm, timeText: e.target.value })}
+                        disabled={eventLoading}
+                        className="h-9 text-xs"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-2 text-xs">
+                    <div className="space-y-1">
+                      <Label htmlFor="eventPrize" className="text-[10px]">Prize Pool</Label>
+                      <Input
+                        id="eventPrize"
+                        type="text"
+                        placeholder="e.g. ₹30,000"
+                        value={eventForm.prizePool}
+                        onChange={(e) => setEventForm({ ...eventForm, prizePool: e.target.value })}
+                        disabled={eventLoading}
+                        className="h-9 text-xs px-2"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label htmlFor="eventSize" className="text-[10px]">Team Size</Label>
+                      <Input
+                        id="eventSize"
+                        type="text"
+                        placeholder="e.g. 1-2 Members"
+                        value={eventForm.teamSize}
+                        onChange={(e) => setEventForm({ ...eventForm, teamSize: e.target.value })}
+                        disabled={eventLoading}
+                        className="h-9 text-xs px-2"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label htmlFor="eventFee" className="text-[10px]">Entry Fee</Label>
+                      <Input
+                        id="eventFee"
+                        type="text"
+                        placeholder="e.g. ₹150"
+                        value={eventForm.entryFee}
+                        onChange={(e) => setEventForm({ ...eventForm, entryFee: e.target.value })}
+                        disabled={eventLoading}
+                        className="h-9 text-xs px-2"
                       />
                     </div>
                   </div>
 
                   <div className="space-y-1">
-                    <Label htmlFor="duration">Slot Duration (Minutes)</Label>
+                    <Label htmlFor="eventVenue" className="text-xs">Venue Location</Label>
                     <Input
-                      id="duration"
-                      type="number"
-                      value={duration}
-                      onChange={(e) => setDuration(Number(e.target.value))}
-                      required
-                      min={15}
-                      max={180}
-                      disabled={genLoading}
+                      id="eventVenue"
+                      type="text"
+                      placeholder="e.g. VIT Pune, Online"
+                      value={eventForm.venue}
+                      onChange={(e) => setEventForm({ ...eventForm, venue: e.target.value })}
+                      disabled={eventLoading}
+                      className="h-9 text-xs"
                     />
                   </div>
 
-                  <Button type="submit" disabled={genLoading} className="w-full flex justify-center items-center gap-2">
-                    {genLoading && <Loader2 className="h-4 w-4 animate-spin" />}
-                    Batch Generate Slots 📅
-                  </Button>
+                  <div className="flex gap-2 pt-2">
+                    <Button type="submit" disabled={eventLoading} className="flex-1 h-10 text-xs font-bold uppercase">
+                      {eventLoading && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+                      {eventForm.id ? "Update Event" : "Create Event"}
+                    </Button>
+                    {eventForm.id && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setEventForm({
+                          id: "",
+                          title: "",
+                          description: "",
+                          category: "Event",
+                          dateText: "",
+                          timeText: "",
+                          prizePool: "",
+                          teamSize: "",
+                          entryFee: "",
+                          venue: "VIT Pune",
+                          type: "PREVIOUS",
+                        })}
+                        className="h-10 text-xs"
+                      >
+                        Cancel
+                      </Button>
+                    )}
+                  </div>
                 </form>
-
-                <div className="mt-6 pt-6 border-t border-border/40">
-                  <h4 className="text-xs font-bold text-destructive uppercase tracking-wider mb-2">Danger Zone</h4>
-                  <p className="text-[10px] text-muted-foreground mb-3">Resets slots, clears candidates list, and updates user verification states.</p>
-                  <Button variant="destructive" size="sm" onClick={handleResetRecruitment} disabled={recruitmentLoading} className="gap-2 w-full">
-                    <Trash2 className="h-4 w-4" /> Reset Recruitment Database
-                  </Button>
-                </div>
               </CardContent>
             </Card>
 
-            {/* Applicants List and Overview Stats */}
-            <div className="space-y-6">
-              
-              {/* Internal Stats row */}
-              <div className="grid grid-cols-3 gap-4">
-                <div className="p-3 border border-border/40 rounded-lg bg-card/25 text-center">
-                  <span className="text-[9px] text-muted-foreground block font-bold uppercase">Applicants</span>
-                  <span className="text-lg font-bold text-foreground">{applicants.length}</span>
-                </div>
-                <div className="p-3 border border-border/40 rounded-lg bg-card/25 text-center">
-                  <span className="text-[9px] text-muted-foreground block font-bold uppercase">Slots Open</span>
-                  <span className="text-lg font-bold text-foreground">{totalSlots}</span>
-                </div>
-                <div className="p-3 border border-border/40 rounded-lg bg-card/25 text-center">
-                  <span className="text-[9px] text-muted-foreground block font-bold uppercase">Booked</span>
-                  <span className="text-lg font-bold text-foreground">{bookedSpots}</span>
-                </div>
-              </div>
+            {/* Dynamic Events Catalog Display */}
+            <Card className="border border-border/60 bg-card/40 backdrop-blur-md overflow-hidden">
+              <CardHeader className="pb-3 border-b border-border/40">
+                <CardTitle className="text-base flex items-center gap-2 uppercase font-bold text-foreground">
+                  <BookOpen className="h-4 w-4 text-primary" /> Active Events Catalog ({allEvents.length})
+                </CardTitle>
+                <CardDescription className="text-xs">List of all upcoming and past events currently active on the platform.</CardDescription>
+              </CardHeader>
 
-              {/* Applicants Table */}
-              <Card className="border border-border/60 bg-card/40 backdrop-blur-md overflow-hidden">
-                <CardHeader className="pb-3 border-b border-border/40">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-sm flex items-center gap-1.5 font-bold">
-                      <ListFilter className="h-4 w-4 text-primary" /> Application Submissions
-                    </CardTitle>
-                  </div>
-                </CardHeader>
-                <div className="overflow-x-auto w-full text-xs">
-                  <table className="w-full text-left border-collapse">
-                    <thead>
-                      <tr className="border-b border-border/40 bg-muted/20">
-                        <th className="p-3 font-bold text-muted-foreground uppercase">Candidate Details</th>
-                        <th className="p-3 font-bold text-muted-foreground uppercase">Branch</th>
-                        <th className="p-3 font-bold text-muted-foreground uppercase">Domains</th>
+              <div className="overflow-y-auto max-h-[550px] w-full text-xs">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="border-b border-border/40 bg-muted/20">
+                      <th className="p-3 font-bold text-muted-foreground uppercase text-[10px] tracking-wider">Event Details</th>
+                      <th className="p-3 font-bold text-muted-foreground uppercase text-[10px] tracking-wider text-center">Type Grid</th>
+                      <th className="p-3 font-bold text-muted-foreground uppercase text-[10px] tracking-wider text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border/30">
+                    {allEvents.length === 0 ? (
+                      <tr>
+                        <td colSpan={3} className="p-8 text-center text-muted-foreground font-semibold">
+                          No dynamic events in database. Catalog is currently showing default seeded templates.
+                        </td>
                       </tr>
-                    </thead>
-                    <tbody className="divide-y divide-border/30">
-                      {applicants.length === 0 ? (
-                        <tr>
-                          <td colSpan={3} className="p-4 text-center text-muted-foreground font-semibold">
-                            No candidate questionnaires submitted yet.
+                    ) : (
+                      allEvents.map((evt) => (
+                        <tr key={evt._id} className="hover:bg-muted/5 transition-colors">
+                          <td className="p-3">
+                            <span className="font-bold text-foreground text-sm block">{evt.title}</span>
+                            <span className="text-[10px] text-primary font-semibold">{evt.category} · {evt.dateText} {evt.timeText && `· ${evt.timeText}`}</span>
+                            <p className="text-[10px] text-muted-foreground line-clamp-2 mt-1 max-w-md">{evt.description}</p>
+                          </td>
+                          <td className="p-3 text-center">
+                            <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold border ${evt.type === "UPCOMING" ? "bg-primary/10 text-primary border-primary/20" : "bg-muted/10 text-muted-foreground border-border"}`}>
+                              {evt.type}
+                            </span>
+                          </td>
+                          <td className="p-3 text-right">
+                            <div className="flex items-center justify-end gap-1.5">
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={() => handleEditEventClick(evt)}
+                                className="h-7 w-7"
+                              >
+                                <Edit2 className="h-3.5 w-3.5 text-primary" />
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={() => handleDeleteEvent(evt._id)}
+                                className="h-7 w-7 text-destructive hover:text-white hover:bg-destructive"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </Button>
+                            </div>
                           </td>
                         </tr>
-                      ) : (
-                        applicants.map((app) => (
-                          <tr key={app._id} className="hover:bg-muted/10 transition-colors">
-                            <td className="p-3">
-                              <p className="font-bold text-foreground">{app.fullname}</p>
-                              <p className="text-[10px] text-muted-foreground">{app.email}</p>
-                              <p className="text-[9px] text-primary mt-0.5">{app.phone_number}</p>
-                              {app.github && (
-                                <p className="text-[10px] text-muted-foreground mt-1">
-                                  GitHub: <a href={app.github.startsWith("http") ? app.github : `https://${app.github}`} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">{app.github}</a>
-                                </p>
-                              )}
-                              {app.linkedin && (
-                                <p className="text-[10px] text-muted-foreground mt-0.5">
-                                  LinkedIn: <a href={app.linkedin.startsWith("http") ? app.linkedin : `https://${app.linkedin}`} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">{app.linkedin}</a>
-                                </p>
-                              )}
-                            </td>
-                            <td className="p-3 font-medium text-foreground">{app.branch}</td>
-                            <td className="p-3">
-                              <div className="flex flex-wrap gap-1">
-                                {app.domain.map((d) => (
-                                  <span key={d} className="px-1.5 py-0.5 rounded bg-primary/10 text-primary text-[9px] border border-primary/10 font-bold uppercase">
-                                    {d}
-                                  </span>
-                                ))}
-                              </div>
-                            </td>
-                          </tr>
-                        ))
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              </Card>
-            </div>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </Card>
           </div>
-        </div>         
+        )}
+
       </main>
     </div>
   );
