@@ -3,6 +3,8 @@
 import Link from "next/link";
 import Image from "next/image";
 import { GradientCard } from "@/components/ui/gradient-card";
+import FloatingRecruitmentBubble from "@/components/home/floating-recruitment-bubble";
+import TenureRoadmap from "@/components/home/tenure-roadmap";
 
 import ieeeLogo from "@/assets/images/footer/IEEE_logo2.png";
 import cardGif from "@/assets/images/card/right2_.gif";
@@ -62,6 +64,9 @@ const galleryItems = [
 export default function Home() {
   return (
     <div>
+      {/* Floating Action Bubble for Recruitment */}
+      <FloatingRecruitmentBubble />
+
       {/* Hero Section */}
       <section className="relative py-24 md:py-32 overflow-hidden">
         <div className="absolute inset-0">
@@ -85,11 +90,13 @@ export default function Home() {
             <p className="text-lg md:text-xl text-muted-foreground leading-relaxed">
               Advancing Technology towards Humanity
             </p>
-
           </div>
         </div>
       </section>
-      {/* Upcoming Events section hidden because current events are over. */}
+
+      {/* Tenure Roadmap & Process Flow Section */}
+      <TenureRoadmap />
+
       {/* About IEEE */}
       <section className="py-20 border-t border-border/50">
         <div className="container mx-auto px-4">
@@ -155,8 +162,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-
-
 
       {/* Gallery */}
       <section className="py-20 border-t border-border/50">
