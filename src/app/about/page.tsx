@@ -36,133 +36,133 @@ const faculty = [
 
 const coreTeam = [
   {
-    name: "Shreeram",
-    role: "Competitive Programming Head",
+    name: "Shreeram Ujlambkar",
+    role: "Chairperson",
     image: shreeram,
-    instagram: "https://instagram.com",
-    linkedin: "https://linkedin.com",
-    email: "shreeram.ujlambkar@ieee.org"
+    instagram: "https://www.instagram.com/shreeram_0606/?hl=en",
+    linkedin: "https://www.linkedin.com/in/shreeuj06/",
+    email: "shreeram.ujlambkar24@vit.edu"
   },
   {
-    name: "Shalvi",
+    name: "Shalvi Maheshwari",
     role: "Vice Chairperson",
     image: shalvi,
     instagram: "https://instagram.com",
     linkedin: "https://linkedin.com",
-    email: "shalvi.maheshwari@ieee.org"
+    email: "shalvi.maheshwari24@vit.edu"
   },
   {
-    name: "Dhruv",
-    role: "Secretary",
+    name: "Dhruv Karanwal",
+    role: "Joint Secretary",
     image: dhruv,
     instagram: "https://instagram.com",
-    linkedin: "https://linkedin.com",
-    email: "dhruv.karanwal@ieee.org"
+    linkedin: "https://www.linkedin.com/in/dhruv-karanwal",
+    email: "dhruv.karanwal24@vit.edu"
   },
   {
-    name: "Saumya",
+    name: "Saumya Dhorje",
     role: "Curation Head",
     image: saumya,
-    instagram: "https://instagram.com",
-    linkedin: "https://linkedin.com",
-    email: "saumya.dhorje@ieee.org"
+    instagram: "https://www.instagram.com/saumyad_30",
+    linkedin: "https://www.linkedin.com/in/saumya-dhorje-5a596332a",
+    email: "saumya.dhorje24@vit.edu"
   },
   {
     name: "Vedant Mishra",
     role: "Sponsorship Head",
     image: vedantMishraCore,
-    instagram: "https://instagram.com",
-    linkedin: "https://linkedin.com",
-    email: "vedant.mishra@ieee.org"
+    instagram: "https://www.instagram.com/vedant.mishra47/",
+    linkedin: "https://www.linkedin.com/in/vedantm47/",
+    email: "vedant.mishra24@vit.edu"
   },
   {
-    name: "Pragati",
-    role: "Secretary",
+    name: "Pragati Lunkad",
+    role: "Joint Secretary",
     image: pragati,
-    instagram: "https://instagram.com",
-    linkedin: "https://linkedin.com",
-    email: "pragati.lunkad@ieee.org"
+    instagram: "https://www.instagram.com/__pragati17__/",
+    linkedin: "https://www.linkedin.com/in/pragati-lunkad-25271a333/",
+    email: "pragati.lunkad241@vit.edu"
   },
   {
-    name: "Punyesh",
-    role: "Finance Head",
+    name: "Punyesh Kapre",
+    role: "Treasurer",
     image: punyesh,
-    instagram: "https://instagram.com",
-    linkedin: "https://linkedin.com",
-    email: "punyesh.finance@ieee.org"
+    instagram: "https://www.instagram.com/punyesh_17",
+    linkedin: "https://www.linkedin.com/in/punyesh-kapre-534195330?utm_source=share_via&utm_content=profile&utm_medium=member_android",
+    email: "punyesh.kapre24@vit.edu"
   },
   {
-    name: "Swanandi",
-    role: "Aesthetic Head",
+    name: "Swanandi Salunkhe",
+    role: "Aesthetics Head",
     image: swanandi,
     instagram: "https://instagram.com",
     linkedin: "https://linkedin.com",
-    email: "swanandi.salunkhe@ieee.org"
+    email: "swanandi.salunkhe241@vit.edu"
   },
   {
-    name: "Trishul",
-    role: "PR, Design & Multimedia Head",
+    name: "Trishul Jumde",
+    role: "Multimedia Head",
     image: trishul,
     instagram: "https://instagram.com",
     linkedin: "https://linkedin.com",
-    email: "trishul.pr@ieee.org"
+    email: "trishul.jumde24@vit.edu"
   },
   {
-    name: "Mihir",
-    role: "PR, Design & Multimedia Head",
+    name: "Mihir Patel",
+    role: "Multimedia Head",
     image: mihir,
-    instagram: "https://instagram.com",
-    linkedin: "https://linkedin.com",
-    email: "mihir.pr@ieee.org"
+    instagram: "https://www.instagram.com/mihir07_patel_",
+    linkedin: "https://www.linkedin.com/in/mihir-patel-a2542032b?",
+    email: "patel.mihir24@vit.edu"
   },
   {
-    name: "Siddhant",
-    role: "Coding Club Head",
+    name: "Siddhant Belkhede",
+    role: "Coding Head",
     image: siddhant,
-    instagram: "https://instagram.com",
-    linkedin: "https://linkedin.com",
-    email: "siddhant.coding@ieee.org"
+    instagram: "https://www.instagram.com/siddhant_belkhede",
+    linkedin: "https://www.linkedin.com/in/siddhantbelkhede/",
+    email: "siddhant.belkhede24@vit.edu"
   },
   {
-    name: "Ojas",
-    role: "Coding Club Head",
+    name: "Ojas Manchanda",
+    role: "Coding Head",
     image: ojas,
-    instagram: "https://instagram.com",
-    linkedin: "https://linkedin.com",
-    email: "ojas.coding@ieee.org"
+    instagram: "https://www.instagram.com/ojas.manchanda/",
+    linkedin: "https://www.linkedin.com/in/ojas-manchanda-981a74329/",
+    email: "ojas.manchanda24@vit.edu"
   },
   {
-    name: "Nirmit",
-    role: "AI Head",
+    name: "Nirmit Hatti",
+    role: "AI Project Head",
     image: nirmit,
-    instagram: "https://instagram.com",
-    linkedin: "https://linkedin.com",
-    email: "nirmit.ai@ieee.org"
+    instagram: "https://www.instagram.com/nirmit_hatti07?igsh=amdtdmF3djVrZWFs",
+    linkedin: "https://www.linkedin.com/in/nirmit-hatti-3b548a220?utm_source=share_via&utm_content=profile&utm_medium=member_android",
+    email: "nirmit.hatti24@vit.edu"
   },
   {
-    name: "Prathamesh",
-    role: "Web Head",
+    name: "Prathmesh Toke",
+    role: "Web Project Head",
     image: prathameshCore,
-    instagram: "https://instagram.com",
-    linkedin: "https://linkedin.com",
-    email: "prathamesh.toke@ieee.org"
+    instagram: "https://www.instagram.com/toke.prathmesh/",
+    linkedin: "https://www.linkedin.com/in/toke-prathmesh/",
+    email: "prathmesh.toke24@vit.edu"
   },
   {
-    name: "Kalyani",
-    role: "App Head",
+    name: "Kalyani Patil",
+    role: "App Project Head",
     image: kalyani,
-    instagram: "https://instagram.com",
-    linkedin: "https://linkedin.com",
-    email: "kalyani.app@ieee.org"
+    instagram: "https://www.instagram.com/kalyani__.patil/",
+    linkedin: "https://www.linkedin.com/in/kalyani-patil06/",
+    email: "kalyani.patil24@vit.edu"
   },
   {
     name: "Yash Gandhi",
     role: "Research Head",
     image: yashGandhi,
-    instagram: "https://instagram.com",
-    linkedin: "https://linkedin.com",
-    email: "yash.gandhi@ieee.org"
-  },
+    instagram: "https://www.instagram.com/gandhiy_.19/",
+    linkedin: "https://www.linkedin.com/in/yash-gandhi-ba9243298/",
+    email: "yash.gandhi24@vit.edu"
+  }
 ];
 
 function initialsFromName(name: string): string {
