@@ -41,23 +41,23 @@ const coreTeam = [
     image: shreeram,
     instagram: "https://www.instagram.com/shreeram_0606/?hl=en",
     linkedin: "https://www.linkedin.com/in/shreeuj06/",
-    email: "shreeram.ujlambkar24@vit.edu"
+    email: "shreeram.ujlambkar24@vit.edu",
   },
   {
     name: "Shalvi Maheshwari",
     role: "Vice Chairperson",
     image: shalvi,
-    instagram: "https://instagram.com",
-    linkedin: "https://linkedin.com",
-    email: "shalvi.maheshwari24@vit.edu"
+    instagram: "https://www.instagram.com/shalvi1125?igsh=MTQ2ZjBjcmQ2aWhnNg==",
+    linkedin: "https://www.linkedin.com/in/shalvi-maheshwari-59b289339?utm_source=share_via&utm_content=profile&utm_medium=member_android",
+    email: "shalvi.maheshwari24@vit.edu",
   },
   {
     name: "Dhruv Karanwal",
     role: "Joint Secretary",
     image: dhruv,
-    instagram: "https://instagram.com",
+    instagram: "https://www.instagram.com/_dhruv.00_/",
     linkedin: "https://www.linkedin.com/in/dhruv-karanwal",
-    email: "dhruv.karanwal24@vit.edu"
+    email: "dhruv.karanwal24@vit.edu",
   },
   {
     name: "Saumya Dhorje",
@@ -65,7 +65,7 @@ const coreTeam = [
     image: saumya,
     instagram: "https://www.instagram.com/saumyad_30",
     linkedin: "https://www.linkedin.com/in/saumya-dhorje-5a596332a",
-    email: "saumya.dhorje24@vit.edu"
+    email: "saumya.dhorje24@vit.edu",
   },
   {
     name: "Vedant Mishra",
@@ -73,7 +73,7 @@ const coreTeam = [
     image: vedantMishraCore,
     instagram: "https://www.instagram.com/vedant.mishra47/",
     linkedin: "https://www.linkedin.com/in/vedantm47/",
-    email: "vedant.mishra24@vit.edu"
+    email: "vedant.mishra24@vit.edu",
   },
   {
     name: "Pragati Lunkad",
@@ -81,31 +81,35 @@ const coreTeam = [
     image: pragati,
     instagram: "https://www.instagram.com/__pragati17__/",
     linkedin: "https://www.linkedin.com/in/pragati-lunkad-25271a333/",
-    email: "pragati.lunkad241@vit.edu"
+    email: "pragati.lunkad241@vit.edu",
   },
   {
     name: "Punyesh Kapre",
     role: "Treasurer",
     image: punyesh,
     instagram: "https://www.instagram.com/punyesh_17",
-    linkedin: "https://www.linkedin.com/in/punyesh-kapre-534195330?utm_source=share_via&utm_content=profile&utm_medium=member_android",
-    email: "punyesh.kapre24@vit.edu"
+    linkedin:
+      "https://www.linkedin.com/in/punyesh-kapre-534195330?utm_source=share_via&utm_content=profile&utm_medium=member_android",
+    email: "punyesh.kapre24@vit.edu",
   },
   {
     name: "Swanandi Salunkhe",
     role: "Aesthetics Head",
     image: swanandi,
-    instagram: "https://instagram.com",
-    linkedin: "https://linkedin.com",
-    email: "swanandi.salunkhe241@vit.edu"
+    instagram:
+      "https://www.instagram.com/sw.n.ndi?igsh=MTc4NzE1NXpxbmxybw==",
+    linkedin:
+      "https://www.linkedin.com/in/swanandisalunkhe?utm_source=share_via&utm_content=profile&utm_medium=member_android",
+    email: "swanandi.salunkhe241@vit.edu",
   },
   {
     name: "Trishul Jumde",
     role: "Multimedia Head",
     image: trishul,
-    instagram: "https://instagram.com",
-    linkedin: "https://linkedin.com",
-    email: "trishul.jumde24@vit.edu"
+    instagram:
+      "https://www.instagram.com/trishul.01?igsh=cGJlYmhyNjIxNXZs",
+    linkedin: "https://www.linkedin.com/in/trishul-jumde-26jan2006",
+    email: "trishul.jumde24@vit.edu",
   },
   {
     name: "Mihir Patel",
@@ -113,7 +117,7 @@ const coreTeam = [
     image: mihir,
     instagram: "https://www.instagram.com/mihir07_patel_",
     linkedin: "https://www.linkedin.com/in/mihir-patel-a2542032b?",
-    email: "patel.mihir24@vit.edu"
+    email: "patel.mihir24@vit.edu",
   },
   {
     name: "Siddhant Belkhede",
@@ -121,7 +125,7 @@ const coreTeam = [
     image: siddhant,
     instagram: "https://www.instagram.com/siddhant_belkhede",
     linkedin: "https://www.linkedin.com/in/siddhantbelkhede/",
-    email: "siddhant.belkhede24@vit.edu"
+    email: "siddhant.belkhede24@vit.edu",
   },
   {
     name: "Ojas Manchanda",
@@ -129,15 +133,15 @@ const coreTeam = [
     image: ojas,
     instagram: "https://www.instagram.com/ojas.manchanda/",
     linkedin: "https://www.linkedin.com/in/ojas-manchanda-981a74329/",
-    email: "ojas.manchanda24@vit.edu"
+    email: "ojas.manchanda24@vit.edu",
   },
   {
     name: "Nirmit Hatti",
     role: "AI Project Head",
     image: nirmit,
     instagram: "https://www.instagram.com/nirmit_hatti07?igsh=amdtdmF3djVrZWFs",
-    linkedin: "https://www.linkedin.com/in/nirmit-hatti-3b548a220?utm_source=share_via&utm_content=profile&utm_medium=member_android",
-    email: "nirmit.hatti24@vit.edu"
+    linkedin: "https://www.linkedin.com/in/nirmit-hatti-3b548a220",
+    email: "nirmit.hatti24@vit.edu",
   },
   {
     name: "Prathmesh Toke",
@@ -145,7 +149,7 @@ const coreTeam = [
     image: prathameshCore,
     instagram: "https://www.instagram.com/toke.prathmesh/",
     linkedin: "https://www.linkedin.com/in/toke-prathmesh/",
-    email: "prathmesh.toke24@vit.edu"
+    email: "prathmesh.toke24@vit.edu",
   },
   {
     name: "Kalyani Patil",
@@ -153,7 +157,7 @@ const coreTeam = [
     image: kalyani,
     instagram: "https://www.instagram.com/kalyani__.patil/",
     linkedin: "https://www.linkedin.com/in/kalyani-patil06/",
-    email: "kalyani.patil24@vit.edu"
+    email: "kalyani.patil24@vit.edu",
   },
   {
     name: "Yash Gandhi",
@@ -161,8 +165,8 @@ const coreTeam = [
     image: yashGandhi,
     instagram: "https://www.instagram.com/gandhiy_.19/",
     linkedin: "https://www.linkedin.com/in/yash-gandhi-ba9243298/",
-    email: "yash.gandhi24@vit.edu"
-  }
+    email: "yash.gandhi24@vit.edu",
+  },
 ];
 
 function initialsFromName(name: string): string {
