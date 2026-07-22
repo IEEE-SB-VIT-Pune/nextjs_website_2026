@@ -11,6 +11,7 @@ import {
   createGoogleCalendarEvent,
   updateGoogleCalendarEvent,
   logBookingToGoogleSheet,
+  checkGoogleTokenStatus,
 } from "@/lib/google";
 
 const bookSlotSchema = z.object({
@@ -28,6 +29,14 @@ export async function POST(request: Request) {
     const payload = await verifyJWT(token);
     if (!payload || !payload.id) {
       return NextResponse.json({ success: false, message: "Unauthorized: Invalid session" }, { status: 401 });
+    }
+
+    const tokenStatus = await checkGoogleTokenStatus();
+    if (tokenStatus.isExpired) {
+      return NextResponse.json({
+        success: false,
+        message: "We are experiencing technical issues with our Google integration (Google Token has expired or is invalid). Slot booking is temporarily disabled. Please contact the developer immediately to update the Google refresh token."
+      }, { status: 503 });
     }
 
     const body = await request.json();

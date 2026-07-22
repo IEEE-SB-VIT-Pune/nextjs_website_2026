@@ -5,7 +5,7 @@ import connectDB from "@/lib/db";
 import { User } from "@/models/User";
 import { Interview } from "@/models/Interview";
 import { verifyJWT } from "@/lib/jwt";
-import { logResponseToGoogleSheet } from "@/lib/google";
+import { logResponseToGoogleSheet, checkGoogleTokenStatus } from "@/lib/google";
 import { SystemConfig } from "@/models/SystemConfig";
 
 const recruitmentFormSchema = z.object({
@@ -34,6 +34,14 @@ export async function POST(request: Request) {
     const payload = await verifyJWT(token);
     if (!payload || !payload.id) {
       return NextResponse.json({ success: false, message: "Unauthorized: Invalid session" }, { status: 401 });
+    }
+
+    const tokenStatus = await checkGoogleTokenStatus();
+    if (tokenStatus.isExpired) {
+      return NextResponse.json({
+        success: false,
+        message: "We are experiencing technical issues with our Google Sheets integration (Google Token has expired or is invalid). Form submissions are temporarily disabled. Please contact the developer immediately to update the Google refresh token."
+      }, { status: 503 });
     }
 
     await connectDB();

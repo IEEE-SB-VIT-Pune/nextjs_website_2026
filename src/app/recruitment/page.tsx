@@ -422,6 +422,21 @@ export default function RecruitmentPage() {
         </p>
       </header>
 
+      {/* Google Sheets Token Expired Warning Banner */}
+      {config?.isGoogleTokenExpired && (
+        <div className="flex flex-col sm:flex-row items-start gap-3.5 p-4 rounded-xl border border-destructive bg-destructive/15 text-sm text-destructive-foreground animate-pulse shadow-lg shadow-destructive/10 relative z-50">
+          <AlertCircle className="h-6 w-6 shrink-0 text-destructive-foreground mt-0.5" />
+          <div className="flex-1 space-y-1">
+            <h4 className="font-bold text-foreground text-sm flex items-center gap-1.5">
+              ⚠️ Technical Maintenance Required
+            </h4>
+            <p className="text-muted-foreground text-xs sm:text-sm leading-relaxed">
+              We are experiencing a temporary backend issue with Google Sheets database synchronisation. Form submissions and slot booking are temporarily locked. Please contact the <strong>IEEE Website Developer</strong> urgently to update this.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Clean Minimalist Step Progress Bar */}
       <div className="grid grid-cols-3 gap-1.5 sm:gap-3 border border-border/40 bg-card/40 p-1.5 sm:p-2 rounded-xl backdrop-blur-md shadow-sm">
         <div
@@ -541,7 +556,8 @@ export default function RecruitmentPage() {
                 </div>
               )}
 
-              <div className="form-section-title text-sm font-bold uppercase tracking-wider text-muted-foreground pb-1 border-b border-border/40 mb-3">
+              <fieldset disabled={applyLoading || !!config?.isGoogleTokenExpired} className="space-y-6">
+                <div className="form-section-title text-sm font-bold uppercase tracking-wider text-muted-foreground pb-1 border-b border-border/40 mb-3">
                 1. Candidate Profile
               </div>
               <div className="grid md:grid-cols-2 gap-4">
@@ -654,11 +670,9 @@ export default function RecruitmentPage() {
                         id={`domain-${domain}`}
                         checked={selectedDomains.includes(domain)}
                         disabled={
-
                           applyLoading ||
-
+                          !!config?.isGoogleTokenExpired ||
                           (!selectedDomains.includes(domain) && selectedDomains.length >= 3)
-
                         }
                         onChange={(e: any) => {
                           const checked = e.target.checked;
@@ -779,7 +793,9 @@ export default function RecruitmentPage() {
                 />
               </div>
 
-              <Button type="submit" disabled={applyLoading} className="w-full flex justify-center items-center gap-2 mt-4 py-3 text-sm font-semibold">
+              </fieldset>
+
+              <Button type="submit" disabled={applyLoading || !!config?.isGoogleTokenExpired} className="w-full flex justify-center items-center gap-2 mt-4 py-3 text-sm font-semibold">
                 {applyLoading && <Loader2 className="h-4 w-4 animate-spin" />}
                 Submit Questionnaire
               </Button>
@@ -902,7 +918,7 @@ export default function RecruitmentPage() {
                                 <button
                                   key={s.id}
                                   onClick={() => setSelectedSlotId(s.id)}
-                                  disabled={s.isFull || bookingLoading || !config?.slotBooking?.isCurrentlyLive}
+                                  disabled={s.isFull || bookingLoading || !config?.slotBooking?.isCurrentlyLive || !!config?.isGoogleTokenExpired}
                                   className={`p-3.5 border rounded-lg text-left transition-all relative ${s.isFull
                                     ? "border-border opacity-40 cursor-not-allowed bg-muted/5"
                                     : selectedSlotId === s.id
@@ -943,7 +959,7 @@ export default function RecruitmentPage() {
                       </p>
                     </div>
                     <div className="flex gap-2">
-                      <Button onClick={() => handleBookSlot(selectedSlotId)} disabled={bookingLoading || !config?.slotBooking?.isCurrentlyLive} className="gap-2">
+                      <Button onClick={() => handleBookSlot(selectedSlotId)} disabled={bookingLoading || !config?.slotBooking?.isCurrentlyLive || !!config?.isGoogleTokenExpired} className="gap-2">
                         {bookingLoading && <Loader2 className="h-4 w-4 animate-spin" />}
                         Confirm Slot <ArrowRight className="h-4 w-4" />
                       </Button>
