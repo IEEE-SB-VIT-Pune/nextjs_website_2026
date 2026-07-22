@@ -128,7 +128,7 @@ export default function RegisterPage() {
             <div className="space-y-1.5">
               <Label htmlFor="name">Full Name</Label>
               <div className="relative">
-                <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                {/* <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" /> */}
                 <Input
                   id="name"
                   type="text"
@@ -168,7 +168,7 @@ export default function RegisterPage() {
             <div className="space-y-1.5">
               <Label htmlFor="password">Password</Label>
               <div className="relative">
-                <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                {/* <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" /> */}
                 <Input
                   id="password"
                   type={showPassword ? "text" : "password"}

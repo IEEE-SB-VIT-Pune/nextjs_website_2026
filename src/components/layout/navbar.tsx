@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Sparkles } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import ScrambleHover from "@/components/ui/scramble-hover";
@@ -31,6 +31,7 @@ const Navbar = () => {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [user, setUser] = useState<UserProfile | null>(null);
+  const [recruitmentLive, setRecruitmentLive] = useState(false);
 
   // Poll profile details on mount
   useEffect(() => {
@@ -49,6 +50,24 @@ const Navbar = () => {
     }
     checkAuth();
   }, [pathname]); // Refresh on navigation changes
+
+  // Check if recruitment is live
+  useEffect(() => {
+    async function checkRecruitmentStatus() {
+      try {
+        const res = await fetch("/api/recruitment/config");
+        const data = await res.json();
+        if (data.success && data.config) {
+          const formLive = data.config.interviewForm?.isCurrentlyLive;
+          const bookingLive = data.config.slotBooking?.isCurrentlyLive;
+          setRecruitmentLive(Boolean(formLive || bookingLive));
+        }
+      } catch (err) {
+        // Fail silently
+      }
+    }
+    checkRecruitmentStatus();
+  }, [pathname]);
 
   // Compute dynamic navigation links
   const navLinks = [...baseLinks];
@@ -107,6 +126,7 @@ const Navbar = () => {
           {navLinks.map((link) => {
             const isLogout = link.path === "#logout";
             const isActive = pathname === link.path;
+            const isRecruitment = link.label === "Recruitment";
 
             return (
               <Link
@@ -114,7 +134,7 @@ const Navbar = () => {
                 href={link.path}
                 onClick={(e) => handleLinkClick(link.path, e)}
                 className={cn(
-                  "relative px-4 py-2 text-sm font-medium rounded-md transition-colors",
+                  "relative px-4 py-2 text-sm font-medium rounded-md transition-colors flex items-center gap-1",
                   isActive
                     ? "text-primary"
                     : isLogout
@@ -130,6 +150,15 @@ const Navbar = () => {
                   useOriginalCharsOnly={false}
                   characters="abcdefghijklmnopqrstuvwxyz"
                 />
+                
+                {/* Desktop pulsating dot on Recruitment link */}
+                {isRecruitment && recruitmentLive && (
+                  <span className="relative flex h-2 w-2 ml-1">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500 shadow-[0_0_8px_#10b981]" />
+                  </span>
+                )}
+
                 {isActive && (
                   <motion.div
                     layoutId="nav-indicator"
@@ -144,8 +173,9 @@ const Navbar = () => {
 
         {/* Mobile toggle */}
         <button
-          className="md:hidden p-2 text-muted-foreground hover:text-foreground ml-auto"
+          className="md:hidden p-2 text-muted-foreground hover:text-foreground ml-auto rounded-lg hover:bg-muted/40 transition-colors"
           onClick={() => setMobileOpen(!mobileOpen)}
+          aria-label="Toggle navigation menu"
         >
           {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </button>
@@ -158,12 +188,14 @@ const Navbar = () => {
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            className="md:hidden border-t border-border/50 bg-background/95 backdrop-blur-xl overflow-hidden"
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            className="md:hidden border-t border-border/50 bg-background/95 backdrop-blur-xl overflow-hidden shadow-2xl"
           >
             <div className="container mx-auto px-4 py-4 flex flex-col gap-2">
               {navLinks.map((link) => {
                 const isLogout = link.path === "#logout";
                 const isActive = pathname === link.path;
+                const isRecruitment = link.label === "Recruitment";
 
                 return (
                   <Link
@@ -171,15 +203,23 @@ const Navbar = () => {
                     href={link.path}
                     onClick={(e) => handleLinkClick(link.path, e)}
                     className={cn(
-                      "px-4 py-3 rounded-lg text-sm font-medium transition-colors",
+                      "px-4 py-3 rounded-lg text-sm font-medium transition-colors flex items-center justify-between",
                       isActive
                         ? "bg-primary/10 text-primary border border-primary/20"
                         : isLogout
                         ? "bg-destructive/10 text-destructive border border-destructive/20 hover:bg-destructive/20"
-                        : "text-muted-foreground hover:bg-secondary"
+                        : "text-muted-foreground hover:bg-secondary/40"
                     )}
                   >
-                    {link.label}
+                    <span>{link.label}</span>
+                    
+                    {/* Mobile live badge */}
+                    {isRecruitment && recruitmentLive && (
+                      <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-[10px] font-bold tracking-wider animate-pulse">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                        LIVE
+                      </span>
+                    )}
                   </Link>
                 );
               })}

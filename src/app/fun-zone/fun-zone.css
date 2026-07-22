@@ -367,8 +367,9 @@
   .fun-zone-wrapper .fz-dashboard-grid {
     grid-template-columns: 1fr !important;
   }
+  .fun-zone-wrapper .fz-view-container,
   .fun-zone-wrapper .fz-view-container-large {
-    padding: 24px;
+    padding: 24px 16px;
   }
   .fun-zone-wrapper .fz-action-row {
     flex-direction: column;

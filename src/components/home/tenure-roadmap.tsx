@@ -82,10 +82,10 @@ const steps: StepItem[] = [
     stepNumber: "05",
     title: "Flagship Hackathons",
     badge: "Phase 05 · Flagships",
-    shortDesc: "CodeZest hackathons, Avenir web championships & competitive coding battles.",
+    shortDesc: "CodeZest, Avenir web championships & competitive coding battles.",
     fullDesc:
-      "Executing IEEE VIT Pune's annual flagship events: CodeZest competitive coding hackathon and Workshops, featuring cash prize pools and participants from top institutes.",
-    highlights: ["CodeZest Offline Hackathon", "Emerging Workshop", "Cash Prize Pools"],
+      "Executing IEEE VIT Pune's annual flagship events: CodeZest competitive coding and Workshops, featuring cash prize pools and participants from top institutes.",
+    highlights: ["CodeZest", "Emerging Workshop", "Cash Prize Pools"],
     icon: Trophy,
     accentColor: "from-amber-500 to-orange-500",
   },

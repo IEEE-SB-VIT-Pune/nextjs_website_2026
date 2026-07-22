@@ -244,10 +244,10 @@ export default function AboutPage() {
             {/* Core Section */}
             <div>
               <h3 className="text-xl font-semibold mb-6 text-center">Core 2026-2027</h3>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
                 {coreTeam.map((member) => {
                   return (
-                    <div key={member.name} className="p-4 rounded-2xl border-4 border-stone-300 bg-card/50 hover:scale-105 transition-all max-w-[240px] w-full mx-auto flex flex-col items-center text-center justify-between min-h-[240px]">
+                    <div key={member.name} className="p-3 sm:p-4 rounded-2xl border-4 border-stone-300 bg-card/50 hover:scale-105 transition-all w-full max-w-[240px] mx-auto flex flex-col items-center text-center justify-between min-h-[230px] sm:min-h-[240px]">
                       <div className="flex flex-col items-center gap-2">
                         <Avatar className="h-20 w-20 border border-primary/30 rounded-md">
                           <AvatarImage src={member.image.src} alt={member.name} className="object-contain rounded-md" />
@@ -307,8 +307,8 @@ export default function AboutPage() {
                 </div>
                 <div className="pt-2">
                   <Link href="/recruitment">
-                    <Button className="px-8 py-3 font-bold bg-primary hover:bg-primary/90 text-black rounded-xl shadow-lg shadow-primary/20 transition-all hover:scale-105">
-                      Apply for Execom Recruitment
+                    <Button className="px-6 sm:px-8 py-3 text-xs sm:text-sm font-bold bg-primary hover:bg-primary/90 text-black rounded-xl shadow-lg shadow-primary/20 transition-all hover:scale-105">
+                      Apply for Execom 🚀
                     </Button>
                   </Link>
                 </div>

@@ -593,7 +593,7 @@ export default function DashboardPage() {
         {activeTab === "overview" && (
           <div className="space-y-6">
             {/* Quick Stats Grid */}
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
               <div className="p-4 border border-border/60 bg-card/20 rounded-xl text-center">
                 <span className="text-[10px] text-muted-foreground block font-bold uppercase tracking-wider">Form Submissions</span>
                 <span className="text-2xl font-bold text-primary">{applicants.length}</span>

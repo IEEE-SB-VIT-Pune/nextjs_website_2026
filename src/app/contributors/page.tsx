@@ -87,7 +87,7 @@ export default function ContributorsPage() {
           {projectHeads.map((member) => (
             <article
               key={member.name}
-              className="rounded-2xl border-4 border-stone-300 bg-card/50 p-6 flex items-center gap-5"
+              className="rounded-2xl border-4 border-stone-300 bg-card/50 p-4 sm:p-6 flex flex-col sm:flex-row items-center sm:items-center text-center sm:text-left gap-4 sm:gap-5"
             >
               <Image
                 src={member.image}
