@@ -411,25 +411,53 @@ export default function RecruitmentPage() {
   }
 
   return (
-    <div className="p-6 relative z-10 max-w-4xl mx-auto min-h-[calc(100vh-4rem)] space-y-8">
+    <div className="p-4 sm:p-6 relative z-10 max-w-4xl mx-auto min-h-[calc(100vh-4rem)] space-y-6">
       {/* Page Header */}
-      <header className="flex flex-col items-start pb-6 border-b border-border/50 gap-1.5">
-        <h1 className="text-2xl font-bold tracking-tight text-foreground uppercase flex items-center gap-2">
-          🚀 IEEE Recruitment Portal
+      <header className="flex flex-col items-start pb-4 border-b border-border/40 gap-1">
+        <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
+          IEEE Recruitment Portal
         </h1>
-        <p className="text-sm text-muted-foreground">Follow the steps below to verify your email, submit the application form, and book your interview.</p>
+        <p className="text-xs sm:text-sm text-muted-foreground">
+          Follow the steps below to verify your email, submit the application form, and book your interview.
+        </p>
       </header>
 
-      {/* Step Indicators */}
-      <div className="grid grid-cols-3 gap-4 border border-border/50 bg-card/25 p-3 rounded-lg text-xs font-bold text-center">
-        <div className={`p-2 rounded ${step === "verify" ? "bg-primary/20 text-primary border border-primary/20" : "text-muted-foreground"}`}>
-          1. Verify Email
+      {/* Clean Minimalist Step Progress Bar */}
+      <div className="grid grid-cols-3 gap-1.5 sm:gap-3 border border-border/40 bg-card/40 p-1.5 sm:p-2 rounded-xl backdrop-blur-md shadow-sm">
+        <div
+          className={`py-2 px-1 sm:px-3 rounded-lg text-[11px] sm:text-xs font-semibold text-center transition-all flex items-center justify-center gap-1.5 ${
+            step === "verify"
+              ? "bg-primary text-black font-bold shadow-md shadow-primary/20"
+              : "bg-muted/20 text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          <span className="shrink-0 w-4 h-4 rounded-full bg-current/20 flex items-center justify-center text-[10px] font-bold">1</span>
+          <span className="hidden sm:inline">Verify Email</span>
+          <span className="sm:hidden">Verify</span>
         </div>
-        <div className={`p-2 rounded ${step === "apply" ? "bg-primary/20 text-primary border border-primary/20" : "text-muted-foreground"}`}>
-          2. Questionnaire Form
+
+        <div
+          className={`py-2 px-1 sm:px-3 rounded-lg text-[11px] sm:text-xs font-semibold text-center transition-all flex items-center justify-center gap-1.5 ${
+            step === "apply"
+              ? "bg-primary text-black font-bold shadow-md shadow-primary/20"
+              : "bg-muted/20 text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          <span className="shrink-0 w-4 h-4 rounded-full bg-current/20 flex items-center justify-center text-[10px] font-bold">2</span>
+          <span className="hidden sm:inline">Questionnaire Form</span>
+          <span className="sm:hidden">Questionnaire</span>
         </div>
-        <div className={`p-2 rounded ${step === "book" ? "bg-primary/20 text-primary border border-primary/20" : "text-muted-foreground"}`}>
-          3. Interview Slot Booking
+
+        <div
+          className={`py-2 px-1 sm:px-3 rounded-lg text-[11px] sm:text-xs font-semibold text-center transition-all flex items-center justify-center gap-1.5 ${
+            step === "book"
+              ? "bg-primary text-black font-bold shadow-md shadow-primary/20"
+              : "bg-muted/20 text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          <span className="shrink-0 w-4 h-4 rounded-full bg-current/20 flex items-center justify-center text-[10px] font-bold">3</span>
+          <span className="hidden sm:inline">Slot Booking</span>
+          <span className="sm:hidden">Slot Booking</span>
         </div>
       </div>
 
@@ -608,7 +636,7 @@ export default function RecruitmentPage() {
                   You can select up to 3 domains. ({selectedDomains.length}/3 selected)
                 </p>
                 <Label>Select domains you are interested in (Multiple allowed)</Label>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3 bg-card/25 p-3 rounded-lg border border-border/40">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5 bg-card/25 p-3.5 rounded-lg border border-border/40">
                   {[
                     "Aesthetic",
                     "Content",
@@ -751,9 +779,9 @@ export default function RecruitmentPage() {
                 />
               </div>
 
-              <Button type="submit" disabled={applyLoading} className="w-full flex justify-center items-center gap-2 mt-4">
+              <Button type="submit" disabled={applyLoading} className="w-full flex justify-center items-center gap-2 mt-4 py-3 text-sm font-semibold">
                 {applyLoading && <Loader2 className="h-4 w-4 animate-spin" />}
-                Submit Recruitment Questionnaire 🚀
+                Submit Questionnaire
               </Button>
             </form>
           </CardContent>
