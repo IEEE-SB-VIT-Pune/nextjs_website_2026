@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import connectDB from "@/lib/db";
 import { SystemConfig } from "@/models/SystemConfig";
+import { checkGoogleTokenStatus } from "@/lib/google";
 
 export const dynamic = "force-dynamic";
 
@@ -53,6 +54,8 @@ export async function GET() {
       isSlotBookingCurrentlyLive = !!(start && end && now >= start && now <= end);
     }
 
+    const tokenStatus = await checkGoogleTokenStatus();
+
     return NextResponse.json({
       success: true,
       data: {
@@ -64,6 +67,7 @@ export async function GET() {
           ...slotBookingVal,
           isCurrentlyLive: isSlotBookingCurrentlyLive,
         },
+        isGoogleTokenExpired: tokenStatus.isExpired,
       },
     });
   } catch (error: any) {
@@ -71,3 +75,4 @@ export async function GET() {
     return NextResponse.json({ success: false, message: "An internal server error occurred" }, { status: 500 });
   }
 }
+
