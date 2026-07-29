@@ -5,16 +5,32 @@ const bcrypt = require("bcryptjs");
 
 // 1. Read env variables from .env.local manually
 const envPath = path.join(__dirname, "../../.env.local");
-let mongodbUri = "mongodb://localhost:27017/clubcms";
 
-if (fs.existsSync(envPath)) {
-  const envContent = fs.readFileSync(envPath, "utf8");
-  const match = envContent.match(/MONGODB_URI\s*=\s*(.*)/);
-  if (match && match[1]) {
-    mongodbUri = match[1].trim();
+function loadEnv(filePath) {
+  if (fs.existsSync(filePath)) {
+    const content = fs.readFileSync(filePath, "utf8");
+    content.split(/\r?\n/).forEach(line => {
+      const trimmedLine = line.trim();
+      if (!trimmedLine || trimmedLine.startsWith("#")) return;
+      
+      const equalIndex = trimmedLine.indexOf("=");
+      if (equalIndex > 0) {
+        const key = trimmedLine.substring(0, equalIndex).trim();
+        let value = trimmedLine.substring(equalIndex + 1).trim();
+        
+        // Remove quotes if present
+        if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
+          value = value.substring(1, value.length - 1);
+        }
+        process.env[key] = value;
+      }
+    });
   }
 }
 
+loadEnv(envPath);
+
+const mongodbUri = process.env.MONGODB_URI || "mongodb://localhost:27017/clubcms";
 console.log("Connecting to MongoDB URI:", mongodbUri);
 
 // 2. Connect to MongoDB
@@ -36,37 +52,55 @@ mongoose.connect(mongodbUri, {
 
   const User = mongoose.models.User || mongoose.model("User", UserSchema);
 
+  // Load credentials from environment
+  const adminEmail = process.env.SEED_ADMIN_EMAIL;
+  const adminPassword = process.env.SEED_ADMIN_PASSWORD;
+  const userEmail = process.env.SEED_USER_EMAIL;
+  const userPassword = process.env.SEED_USER_PASSWORD;
+
+  if (!adminEmail || !adminPassword || !userEmail || !userPassword) {
+    console.error("\x1b[31mError: Database seed credentials are not configured in your .env.local file!\x1b[0m");
+    console.error("Please add the following variables to your .env.local file:\n");
+    console.error("  SEED_ADMIN_EMAIL=admin@clubcms.com");
+    console.error("  SEED_ADMIN_PASSWORD=your-secure-admin-password");
+    console.error("  SEED_USER_EMAIL=user@clubcms.com");
+    console.error("  SEED_USER_PASSWORD=your-secure-user-password\n");
+    console.error("Seeding aborted to prevent security vulnerabilities from hardcoded credentials.");
+    process.exit(1);
+  }
+
   // 4. Clear existing users if any to avoid duplication error (or just check existence)
-  await User.deleteMany({ email: { $in: ["admin@clubcms.com", "user@clubcms.com"] } });
+  await User.deleteMany({ email: { $in: [adminEmail, userEmail] } });
   console.log("Cleared old seeder accounts.");
 
-  // Hash password
+  // Hash passwords
   const salt = await bcrypt.genSalt(10);
-  const hashedPassword = await bcrypt.hash("password123", salt);
+  const hashedAdminPassword = await bcrypt.hash(adminPassword, salt);
+  const hashedUserPassword = await bcrypt.hash(userPassword, salt);
 
   // 5. Seed Admin
   const adminUser = new User({
     name: "Admin Moderator",
-    email: "admin@clubcms.com",
-    password: hashedPassword,
+    email: adminEmail,
+    password: hashedAdminPassword,
     role: "ADMIN",
     status: "ACTIVE",
     lastLogin: null
   });
   await adminUser.save();
-  console.log("Created Admin account: admin@clubcms.com / password123");
+  console.log(`Created Admin account: ${adminEmail}`);
 
   // 6. Seed Standard User
   const standardUser = new User({
     name: "Regular Member",
-    email: "user@clubcms.com",
-    password: hashedPassword,
+    email: userEmail,
+    password: hashedUserPassword,
     role: "USER",
     status: "ACTIVE",
     lastLogin: null
   });
   await standardUser.save();
-  console.log("Created User account: user@clubcms.com / password123");
+  console.log(`Created User account: ${userEmail}`);
 
   console.log("Database seeding completed successfully!");
   process.exit(0);
