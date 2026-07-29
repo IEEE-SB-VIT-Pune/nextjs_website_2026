@@ -87,6 +87,7 @@ export default function DashboardPage() {
   const [bookingIsLive, setBookingIsLive] = useState(true);
   const [bookingStart, setBookingStart] = useState("");
   const [bookingEnd, setBookingEnd] = useState("");
+  const [whatsappLink, setWhatsappLink] = useState("https://chat.whatsapp.com/EeEkwbw0LvxA0oOIVHIy1w?s=sh&p=i&mlu=0&ilr=0");
 
   const isInitialized = React.useRef(false);
 
@@ -129,6 +130,13 @@ export default function DashboardPage() {
           body: JSON.stringify({ key: "slotBooking", value: bookingValue }),
         });
 
+        // Save WhatsApp Link config
+        await fetch("/api/admin/config", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ key: "whatsappLink", value: whatsappLink }),
+        });
+
         setConfigsSuccess("Changes auto-saved to database 💾");
       } catch (err) {
         console.error("Auto-save error:", err);
@@ -148,6 +156,7 @@ export default function DashboardPage() {
     bookingIsLive,
     bookingStart,
     bookingEnd,
+    whatsappLink,
   ]);
 
   // Event Manager States
@@ -241,6 +250,10 @@ export default function DashboardPage() {
           setBookingIsLive(bookingDoc.value.isLive !== false);
           if (bookingDoc.value.start) setBookingStart(new Date(bookingDoc.value.start).toISOString().slice(0, 16));
           if (bookingDoc.value.end) setBookingEnd(new Date(bookingDoc.value.end).toISOString().slice(0, 16));
+        }
+        const whatsappDoc = data.configs.find((c: any) => c.key === "whatsappLink");
+        if (whatsappDoc && whatsappDoc.value) {
+          setWhatsappLink(whatsappDoc.value);
         }
         setTimeout(() => {
           isInitialized.current = true;
@@ -433,7 +446,15 @@ export default function DashboardPage() {
       });
       const bookingResData = await resBooking.json();
 
-      if (formResData.success && bookingResData.success) {
+      // Save WhatsApp Link config
+      const resWhatsapp = await fetch("/api/admin/config", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ key: "whatsappLink", value: whatsappLink }),
+      });
+      const whatsappResData = await resWhatsapp.json();
+
+      if (formResData.success && bookingResData.success && whatsappResData.success) {
         setConfigsSuccess("All scheduling system configurations saved successfully.");
       } else {
         setConfigsError("One or more configurations failed to update.");
@@ -1080,6 +1101,28 @@ export default function DashboardPage() {
                         </div>
                       </div>
                     )}
+                  </div>
+                </div>
+
+                {/* 3. WhatsApp Group Link Section */}
+                <div className="border border-border/40 rounded-xl p-4 bg-muted/5 space-y-4">
+                  <div className="flex items-center justify-between border-b border-border/20 pb-3">
+                    <h3 className="font-bold text-sm text-foreground uppercase tracking-wider">Candidate WhatsApp Group</h3>
+                    <span className="px-2 py-0.5 rounded-full text-[9px] font-bold border bg-primary/10 text-primary border-primary/20">
+                      DYNAMIC URL
+                    </span>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="whatsappLink" className="text-xs">Join Group Link</Label>
+                    <Input
+                      id="whatsappLink"
+                      type="url"
+                      placeholder="https://chat.whatsapp.com/..."
+                      value={whatsappLink}
+                      onChange={(e) => setWhatsappLink(e.target.value)}
+                      disabled={configsLoading}
+                      className="h-9 text-xs"
+                    />
                   </div>
                 </div>
 
