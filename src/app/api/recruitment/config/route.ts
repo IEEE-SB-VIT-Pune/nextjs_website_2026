@@ -37,6 +37,12 @@ export async function GET() {
       slotBookingVal = { ...defaultConfig.slotBooking, ...slotBookingDoc.value };
     }
 
+    let whatsappLinkVal = "https://chat.whatsapp.com/EeEkwbw0LvxA0oOIVHIy1w?s=sh&p=i&mlu=0&ilr=0";
+    const whatsappLinkDoc = await SystemConfig.findOne({ key: "whatsappLink" });
+    if (whatsappLinkDoc && whatsappLinkDoc.value) {
+      whatsappLinkVal = whatsappLinkDoc.value;
+    }
+
     // Determine current live states dynamically based on mode and time
     const now = new Date();
     
@@ -67,6 +73,7 @@ export async function GET() {
           ...slotBookingVal,
           isCurrentlyLive: isSlotBookingCurrentlyLive,
         },
+        whatsappLink: whatsappLinkVal,
         isGoogleTokenExpired: tokenStatus.isExpired,
       },
     });

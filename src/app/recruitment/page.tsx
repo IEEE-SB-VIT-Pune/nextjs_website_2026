@@ -89,7 +89,7 @@ export default function RecruitmentPage() {
   };
 
   // Workflow states
-  const [step, setStep] = useState<"verify" | "apply" | "book">("verify");
+  const [step, setStep] = useState<"verify" | "apply" | "whatsapp" | "book">("verify");
 
   // OTP states
   const [otpCode, setOtpCode] = useState("");
@@ -157,8 +157,22 @@ export default function RecruitmentPage() {
         } else if (!response.user.hasSubmittedInterview) {
           setStep("apply");
         } else {
-          setStep("book");
-          loadBookingInfo();
+          // Check if they already booked a slot
+          const myRes = await fetch("/api/recruitment/booking/my-booking");
+          const myData = await myRes.json();
+          if (myData.success && myData.data) {
+            setMyBooking(myData.data);
+            setStep("book");
+          } else {
+            setMyBooking(null);
+            // Fetch available slots
+            const slotsRes = await fetch("/api/recruitment/booking/available-slots");
+            const slotsData = await slotsRes.json();
+            if (slotsData.success && slotsData.data) {
+              setSlots(slotsData.data);
+            }
+            setStep("whatsapp");
+          }
         }
       } else {
         router.push("/register?from=/recruitment");
@@ -264,8 +278,8 @@ export default function RecruitmentPage() {
       });
       const data = await res.json();
       if (data.success) {
-        // Move to Booking
-        setStep("book");
+        // Move to WhatsApp step
+        setStep("whatsapp");
         loadBookingInfo();
       } else {
         setApplyError(data.message || "Submission failed.");
@@ -438,7 +452,7 @@ export default function RecruitmentPage() {
       )}
 
       {/* Clean Minimalist Step Progress Bar */}
-      <div className="grid grid-cols-3 gap-1.5 sm:gap-3 border border-border/40 bg-card/40 p-1.5 sm:p-2 rounded-xl backdrop-blur-md shadow-sm">
+      <div className="grid grid-cols-4 gap-1.5 sm:gap-3 border border-border/40 bg-card/40 p-1.5 sm:p-2 rounded-xl backdrop-blur-md shadow-sm">
         <div
           className={`py-2 px-1 sm:px-3 rounded-lg text-[11px] sm:text-xs font-semibold text-center transition-all flex items-center justify-center gap-1.5 ${
             step === "verify"
@@ -465,12 +479,24 @@ export default function RecruitmentPage() {
 
         <div
           className={`py-2 px-1 sm:px-3 rounded-lg text-[11px] sm:text-xs font-semibold text-center transition-all flex items-center justify-center gap-1.5 ${
-            step === "book"
+            step === "whatsapp"
               ? "bg-primary text-black font-bold shadow-md shadow-primary/20"
               : "bg-muted/20 text-muted-foreground hover:text-foreground"
           }`}
         >
           <span className="shrink-0 w-4 h-4 rounded-full bg-current/20 flex items-center justify-center text-[10px] font-bold">3</span>
+          <span className="hidden sm:inline">Join WhatsApp</span>
+          <span className="sm:hidden">WhatsApp</span>
+        </div>
+
+        <div
+          className={`py-2 px-1 sm:px-3 rounded-lg text-[11px] sm:text-xs font-semibold text-center transition-all flex items-center justify-center gap-1.5 ${
+            step === "book"
+              ? "bg-primary text-black font-bold shadow-md shadow-primary/20"
+              : "bg-muted/20 text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          <span className="shrink-0 w-4 h-4 rounded-full bg-current/20 flex items-center justify-center text-[10px] font-bold">4</span>
           <span className="hidden sm:inline">Slot Booking</span>
           <span className="sm:hidden">Slot Booking</span>
         </div>
@@ -804,7 +830,73 @@ export default function RecruitmentPage() {
         </Card>
       )}
 
-      {/* STEP 3: BOOK INTERVIEW SLOT */}
+      {/* STEP 3: JOIN COMMUNITY / WHATSAPP */}
+      {step === "whatsapp" && (
+        <Card className="border border-border/60 bg-card/40 backdrop-blur-md max-w-xl mx-auto overflow-hidden">
+          <CardHeader className="text-center pb-4">
+            <div className="mx-auto h-12 w-12 rounded-full bg-green-500/10 text-green-400 flex items-center justify-center mb-3">
+              <CheckCircle2 className="h-6 w-6" />
+            </div>
+            <CardTitle className="text-xl font-bold text-foreground uppercase tracking-tight">Questionnaire Submitted!</CardTitle>
+            <CardDescription className="text-xs sm:text-sm text-muted-foreground mt-1">
+              Your application has been logged successfully. Now, complete the following steps to join the next stages.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6 pt-2">
+            
+            {/* WhatsApp Link Box */}
+            <div className="p-5 border border-green-500/25 bg-green-500/5 rounded-xl flex flex-col items-center text-center space-y-4 shadow-sm hover:border-green-500/40 transition-all duration-300">
+              <div className="space-y-1">
+                <span className="text-[10px] text-green-400 font-bold uppercase tracking-wider bg-green-500/10 px-2 py-0.5 rounded-full border border-green-500/20">
+                  Official WhatsApp Group
+                </span>
+                <h4 className="font-bold text-base text-foreground mt-2">Join the IEEE Recruitment Group</h4>
+                <p className="text-xs text-muted-foreground max-w-md mx-auto">
+                  Get real-time announcements, schedule updates, and interact directly with the IEEE VIT Pune Execom panel.
+                </p>
+              </div>
+
+              <a
+                href={config?.whatsappLink || "https://chat.whatsapp.com/EeEkwbw0LvxA0oOIVHIy1w?s=sh&p=i&mlu=0&ilr=0"}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2.5 px-6 py-3 rounded-lg bg-[#25D366] text-black hover:bg-[#20ba5a] font-bold text-sm transition-all duration-200 shadow-md shadow-[#25D366]/20 active:scale-95 cursor-pointer"
+              >
+                <svg className="h-4.5 w-4.5 fill-black" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.724-1.455L0 24zm6.59-4.846c1.6.95 3.188 1.449 4.625 1.451 5.403.002 9.794-4.382 9.797-9.77.002-2.607-1.011-5.059-2.85-6.896-1.839-1.837-4.29-2.85-6.9-2.85-5.407 0-9.8 4.383-9.803 9.771-.001 1.517.404 3.005 1.171 4.298l.257.433-1.01 3.687 3.78-.992.433.256zM17.15 13.9c-.282-.141-1.664-.822-1.921-.916-.257-.094-.444-.141-.631.141-.188.282-.727.916-.89.1.1-.164-.163-.282-.5-.47-.423-.19-.747-.323-1.077-.591-.84-.683-1.488-1.516-1.745-1.961-.257-.445-.027-.686.196-.908.2-.2.443-.518.665-.777.223-.259.297-.445.445-.741.147-.297.074-.556-.037-.777-.111-.222-.916-2.207-1.255-3.023-.33-.794-.666-.687-.916-.7h-.783c-.282 0-.741.106-1.129.53-.388.424-1.48 1.447-1.48 3.529 0 2.082 1.517 4.092 1.728 4.375.212.283 2.984 4.557 7.23 6.388 1.01.436 1.8.697 2.413.892 1.014.322 1.938.277 2.668.169.814-.121 2.5-.822 2.852-1.621.352-.799.352-1.484.246-1.625-.105-.14-.388-.282-.67-.423z"/>
+                </svg>
+                Join WhatsApp Group
+              </a>
+            </div>
+
+            {/* Email Note Alert Box */}
+            <div className="flex flex-col sm:flex-row items-start gap-3.5 p-4 rounded-xl border border-blue-500/25 bg-blue-500/5 text-sm text-blue-400 shadow-sm hover:border-blue-500/40 transition-all duration-300">
+              <Mail className="h-5 w-5 shrink-0 text-blue-400 mt-0.5" />
+              <div className="flex-1 space-y-1">
+                <h4 className="font-bold text-foreground text-sm flex items-center gap-1.5">
+                  📧 Keep an Eye on Your Mailbox!
+                </h4>
+                <p className="text-muted-foreground text-xs leading-relaxed">
+                  We will send updates, interview confirmation details, and next step instructions directly to your registered email address. Make sure to check your spam/junk folder as well so you don't miss anything.
+                </p>
+              </div>
+            </div>
+
+            {/* Next Step Action */}
+            <div className="pt-2">
+              <Button
+                onClick={() => setStep("book")}
+                className="w-full h-11 flex justify-center items-center gap-2 text-xs font-bold uppercase tracking-wider"
+              >
+                Proceed to Slot Booking <ArrowRight className="h-4 w-4" />
+              </Button>
+            </div>
+
+          </CardContent>
+        </Card>
+      )}
+
+      {/* STEP 4: BOOK INTERVIEW SLOT */}
       {step === "book" && (
         <div className="space-y-6">
           {bookingError && (
