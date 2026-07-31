@@ -6,13 +6,14 @@ import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { CheckCircle2, AlertCircle, Loader2, Mail, Calendar, ArrowRight, ShieldCheck, ChevronDown, RefreshCw } from "lucide-react";
+import { CheckCircle2, AlertCircle, Loader2, Mail, Calendar, ArrowRight, ShieldCheck, ChevronDown, RefreshCw, FileText, ExternalLink, Eye } from "lucide-react";
 
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { getProfile, type UserProfile } from "@/services/auth";
 
 // Schema for Interview Form - avoid Zod defaults mismatch
@@ -110,6 +111,7 @@ export default function RecruitmentPage() {
   const [bookingSuccess, setBookingSuccess] = useState<string | null>(null);
   const [selectedSlotId, setSelectedSlotId] = useState<string | null>(null);
   const [expandedDates, setExpandedDates] = useState<Record<string, boolean>>({});
+  const [isBrochureOpen, setIsBrochureOpen] = useState(false);
 
   const {
     register,
@@ -665,8 +667,20 @@ export default function RecruitmentPage() {
                 </div>
               </div>
 
-              <div className="form-section-title text-sm font-bold uppercase tracking-wider text-muted-foreground pb-1 border-b border-border/40 mt-6 mb-3">
-                2. Domains of Interest
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between border-b border-border/40 mt-6 mb-3 pb-1 gap-2">
+                <div className="form-section-title text-sm font-bold uppercase tracking-wider text-muted-foreground">
+                  2. Domains of Interest
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="h-7 text-[11px] gap-1.5 border-primary/30 hover:border-primary bg-primary/5 hover:bg-primary/10 text-primary transition-all duration-300 self-start sm:self-auto"
+                  onClick={() => setIsBrochureOpen(true)}
+                >
+                  <FileText className="h-3 w-3" />
+                  View Domains Brochure
+                </Button>
               </div>
               <div className="space-y-2">
                 <p
@@ -1078,6 +1092,91 @@ export default function RecruitmentPage() {
           </Card>
         </div>
       )}
+
+      {/* Domain Brochure Modal */}
+      <Dialog open={isBrochureOpen} onOpenChange={setIsBrochureOpen}>
+        <DialogContent 
+          className="max-w-4xl w-[95vw] h-auto sm:h-[80vh] md:h-[85vh] flex flex-col p-4 sm:p-5 gap-3 border border-border/80 bg-background/95 backdrop-blur-md" 
+          onClose={() => setIsBrochureOpen(false)}
+        >
+          <DialogHeader className="flex flex-row items-center justify-between pb-2 border-b border-border/40">
+            <div>
+              <DialogTitle className="text-base sm:text-lg font-bold flex items-center gap-2 text-primary">
+                <FileText className="h-4 sm:h-5 w-4 sm:w-5" />
+                IEEE Domain Recruitment Brochure
+              </DialogTitle>
+              <DialogDescription className="text-[11px] sm:text-xs">
+                Explore the domains and details before choosing.
+              </DialogDescription>
+            </div>
+          </DialogHeader>
+
+          {/* Mobile view card (no embedded iframe) */}
+          <div className="sm:hidden flex flex-col items-center justify-center p-5 text-center bg-muted/5 rounded-lg border border-border/40 space-y-4 my-2">
+            <div className="p-3 bg-primary/10 rounded-full text-primary">
+              <FileText className="h-8 w-8 animate-pulse" />
+            </div>
+            <div className="space-y-1">
+              <h4 className="font-semibold text-sm text-foreground">View Domain Brochure</h4>
+              <p className="text-xs text-muted-foreground max-w-xs mx-auto">
+                The brochure PDF contains detailed insights about all domains to help you choose.
+              </p>
+            </div>
+            <div className="w-full flex flex-col gap-2 pt-2">
+              <a
+                href="/IEEE_Information_Brochure_Recruitment.pdf"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center gap-2 w-full py-2.5 px-4 rounded-md bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs shadow transition-all duration-200"
+              >
+                <ExternalLink className="h-3.5 w-3.5" />
+                Open PDF in New Tab
+              </a>
+              <a
+                href="/IEEE_Information_Brochure_Recruitment.pdf"
+                download="IEEE_Information_Brochure_Recruitment.pdf"
+                className="inline-flex items-center justify-center gap-2 w-full py-2.5 px-4 rounded-md bg-muted hover:bg-muted/80 text-foreground border border-border/60 font-semibold text-xs transition-all duration-200"
+              >
+                Download PDF Brochure
+              </a>
+            </div>
+          </div>
+
+          {/* Desktop/Tablet view (embedded iframe) */}
+          <div className="hidden sm:flex flex-1 min-h-0 relative bg-muted/10 rounded-lg border border-border/50 overflow-hidden flex-col items-center justify-center">
+            <div className="absolute top-3 right-3 z-10">
+              <a
+                href="/IEEE_Information_Brochure_Recruitment.pdf"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md bg-background/90 hover:bg-background text-foreground border border-border/60 hover:border-border shadow-sm backdrop-blur-sm transition-all duration-200"
+              >
+                <ExternalLink className="h-3.5 w-3.5" />
+                Open in New Tab
+              </a>
+            </div>
+
+            <iframe
+              src="/IEEE_Information_Brochure_Recruitment.pdf"
+              className="w-full h-full border-0 rounded-md"
+              title="IEEE Domain Recruitment Brochure"
+            />
+          </div>
+
+          <div className="hidden sm:flex justify-between items-center text-[11px] sm:text-xs text-muted-foreground pt-1">
+            <span>If the brochure is not loading, you can:</span>
+            <div className="flex gap-4">
+              <a
+                href="/IEEE_Information_Brochure_Recruitment.pdf"
+                download="IEEE_Information_Brochure_Recruitment.pdf"
+                className="text-primary hover:underline font-semibold flex items-center gap-1"
+              >
+                Download PDF
+              </a>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
