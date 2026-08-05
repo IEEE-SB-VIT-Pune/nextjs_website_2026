@@ -815,7 +815,7 @@ export default function DashboardPage() {
                           onChange={(e) => setMaxStudentsInput(Number(e.target.value))}
                           required
                           min={1}
-                          max={10}
+                          max={20}
                           disabled={genLoading}
                           className="h-9 text-xs"
                         />
@@ -839,11 +839,10 @@ export default function DashboardPage() {
                                   setActiveDays([...activeDays, idx]);
                                 }
                               }}
-                              className={`h-7 px-2.5 text-[10px] font-bold rounded-lg border transition-all flex items-center justify-center cursor-pointer ${
-                                active
+                              className={`h-7 px-2.5 text-[10px] font-bold rounded-lg border transition-all flex items-center justify-center cursor-pointer ${active
                                   ? "bg-primary border-primary text-primary-foreground shadow-sm shadow-primary/30"
                                   : "bg-background border-border/40 text-muted-foreground hover:border-border"
-                              }`}
+                                }`}
                             >
                               {dayName}
                             </button>

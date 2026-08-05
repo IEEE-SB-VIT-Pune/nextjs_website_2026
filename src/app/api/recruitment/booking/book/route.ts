@@ -141,7 +141,7 @@ export async function POST(request: Request) {
       if (slot.students.length === 1) {
         // First student booking: create calendar event
         const eventDetails = {
-          summary: `IEEE Execom Interview Slot - ${new Date(slot.dateTime).toLocaleDateString("en-IN")}`,
+          summary: `IEEE Execom Interview Slot - ${new Date(slot.dateTime).toLocaleDateString("en-IN", { timeZone: "Asia/Kolkata" })}`,
           description: `Simulated panel interview slot for IEEE VIT Pune recruitment.`,
           startTime: new Date(slot.dateTime).toISOString(),
           endTime: new Date(slot.endDateTime).toISOString(),

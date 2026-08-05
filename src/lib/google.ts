@@ -215,8 +215,8 @@ export async function logBookingToGoogleSheet(candidate: {
   try {
     const range = "Sheet1!A:K";
     const timestamp = new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" });
-    const dateStr = new Date(slot.dateTime).toLocaleDateString("en-IN");
-    const timeStr = `${new Date(slot.dateTime).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })} - ${new Date(slot.endDateTime).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}`;
+    const dateStr = new Date(slot.dateTime).toLocaleDateString("en-IN", { timeZone: "Asia/Kolkata" });
+    const timeStr = `${new Date(slot.dateTime).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", timeZone: "Asia/Kolkata" })} - ${new Date(slot.endDateTime).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", timeZone: "Asia/Kolkata" })}`;
 
     const values = [[
       timestamp,
