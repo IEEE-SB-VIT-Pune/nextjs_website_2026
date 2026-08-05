@@ -56,39 +56,146 @@ export async function POST(request: Request) {
     }
 
     // 2. Otherwise execute Slot Generation range
-    const { startDate, endDate, startTime, endTime, duration = 60, maxStudents = 4 } = body;
+    const { 
+      startDate, 
+      endDate, 
+      startTime, 
+      endTime, 
+      duration = 60, 
+      maxStudents = 4,
+      timezoneOffset = 0,
+      breaks = [],
+      activeDays = [0, 1, 2, 3, 4, 5, 6]
+    } = body;
 
     if (!startDate || !endDate || !startTime || !endTime) {
-      return NextResponse.json({ success: false, message: "All parameters (startDate, endDate, startTime, endTime) are required" }, { status: 400 });
+      return NextResponse.json({ success: false, message: "Required parameters (startDate, endDate, startTime, endTime) are missing." }, { status: 400 });
     }
 
-    const slotsList = [];
     const start = new Date(startDate);
     const end = new Date(endDate);
 
+    if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+      return NextResponse.json({ success: false, message: "Start date or End date is invalid." }, { status: 400 });
+    }
+
+    if (start > end) {
+      return NextResponse.json({ success: false, message: "Start date cannot be after end date." }, { status: 400 });
+    }
+
+    const slotDuration = Number(duration);
+    if (isNaN(slotDuration) || slotDuration <= 0) {
+      return NextResponse.json({ success: false, message: "Slot duration must be a valid number greater than 0." }, { status: 400 });
+    }
+
+    const maxStudentsLimit = Number(maxStudents);
+    if (isNaN(maxStudentsLimit) || maxStudentsLimit <= 0) {
+      return NextResponse.json({ success: false, message: "Capacity per slot must be a valid number greater than 0." }, { status: 400 });
+    }
+
+    // Validate break times format if any
+    for (const brk of breaks) {
+      if (brk.startTime && brk.endTime) {
+        const [sh, sm] = brk.startTime.split(":").map(Number);
+        const [eh, em] = brk.endTime.split(":").map(Number);
+        if (isNaN(sh) || isNaN(sm) || isNaN(eh) || isNaN(em)) {
+          return NextResponse.json({ success: false, message: "One of the break times is invalid." }, { status: 400 });
+        }
+      }
+    }
+
+    const slotsList = [];
+
     for (let current = new Date(start); current <= end; current.setDate(current.getDate() + 1)) {
-      const [startHour, startMinute] = startTime.split(":").map(Number);
-      const [endHour, endMinute] = endTime.split(":").map(Number);
+      const dayOfWeek = current.getDay();
+      if (!activeDays.includes(dayOfWeek)) {
+        continue;
+      }
 
-      let slotTime = new Date(current);
-      slotTime.setHours(startHour, startMinute, 0, 0);
+      const dateStr = current.toISOString().split("T")[0];
 
-      const dayEndTime = new Date(current);
-      dayEndTime.setHours(endHour, endMinute, 0, 0);
+      let slotTime = new Date(`${dateStr}T${startTime}:00Z`);
+      slotTime.setMinutes(slotTime.getMinutes() + timezoneOffset);
+
+      let dayEndTime = new Date(`${dateStr}T${endTime}:00Z`);
+      dayEndTime.setMinutes(dayEndTime.getMinutes() + timezoneOffset);
+
+      if (dayEndTime <= slotTime) {
+        dayEndTime.setDate(dayEndTime.getDate() + 1);
+      }
 
       while (slotTime < dayEndTime) {
-        const slotEndTime = new Date(slotTime.getTime() + duration * 60000);
+        // 1. Check if slotTime falls inside a break period
+        let insideBreak = null;
+        for (const brk of breaks) {
+          if (!brk.startTime || !brk.endTime) continue;
+          
+          let breakStart = new Date(`${dateStr}T${brk.startTime}:00Z`);
+          breakStart.setMinutes(breakStart.getMinutes() + timezoneOffset);
+          
+          let breakEnd = new Date(`${dateStr}T${brk.endTime}:00Z`);
+          breakEnd.setMinutes(breakEnd.getMinutes() + timezoneOffset);
+          
+          if (breakEnd <= breakStart) {
+            breakEnd.setDate(breakEnd.getDate() + 1);
+          }
+          
+          if (slotTime >= breakStart && slotTime < breakEnd) {
+            insideBreak = breakEnd;
+            break;
+          }
+        }
         
-        slotsList.push({
-          dateTime: new Date(slotTime),
-          endDateTime: slotEndTime,
-          students: [],
-          maxStudents: Number(maxStudents),
-          isActive: true
-        });
+        if (insideBreak) {
+          slotTime = new Date(insideBreak.getTime());
+          continue;
+        }
 
-        slotTime.setTime(slotTime.getTime() + duration * 60000);
+        const slotEndTime = new Date(slotTime.getTime() + slotDuration * 60000);
+        if (slotEndTime > dayEndTime) {
+          break;
+        }
+
+        // 2. Check if the generated slot overlaps with any break
+        let overlapsBreak = false;
+        for (const brk of breaks) {
+          if (!brk.startTime || !brk.endTime) continue;
+          
+          let breakStart = new Date(`${dateStr}T${brk.startTime}:00Z`);
+          breakStart.setMinutes(breakStart.getMinutes() + timezoneOffset);
+          
+          let breakEnd = new Date(`${dateStr}T${brk.endTime}:00Z`);
+          breakEnd.setMinutes(breakEnd.getMinutes() + timezoneOffset);
+          
+          if (breakEnd <= breakStart) {
+            breakEnd.setDate(breakEnd.getDate() + 1);
+          }
+
+          if (slotTime < breakEnd && slotEndTime > breakStart) {
+            overlapsBreak = true;
+            break;
+          }
+        }
+
+        if (!overlapsBreak) {
+          slotsList.push({
+            dateTime: new Date(slotTime),
+            endDateTime: slotEndTime,
+            students: [],
+            maxStudents: maxStudentsLimit,
+            isActive: true
+          });
+        }
+
+        slotTime.setTime(slotTime.getTime() + slotDuration * 60000);
       }
+    }
+
+    if (slotsList.length === 0) {
+      return NextResponse.json({ 
+        success: false, 
+        message: "No slots were generated. Check if the selected time range, break hours, or active days are conflicting." 
+      }, { status: 400 });
     }
 
     // Save slots

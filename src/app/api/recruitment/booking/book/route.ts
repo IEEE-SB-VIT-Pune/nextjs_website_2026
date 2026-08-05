@@ -91,7 +91,7 @@ export async function POST(request: Request) {
     }
 
     // Fetch Slot details
-    const slot = await Slot.findById(slotId);
+    let slot = await Slot.findById(slotId);
     if (!slot || !slot.isActive) {
       return NextResponse.json({ success: false, message: "Selected interview slot is unavailable or inactive." }, { status: 404 });
     }
@@ -102,14 +102,39 @@ export async function POST(request: Request) {
 
     // Panel assignment (1-4 concurrency)
     const assignedPanel = slot.students.length + 1;
-    slot.students.push({
-      studentId: user._id,
-      studentName: user.name,
-      studentEmail: user.email,
-      panel: assignedPanel,
-    });
 
-    await slot.save();
+    // Concurrency protection: verify slot size matches our read state to prevent double booking/overbooking
+    const updateResult = await Slot.updateOne(
+      {
+        _id: slotId,
+        isActive: true,
+        students: { $size: slot.students.length }
+      },
+      {
+        $push: {
+          students: {
+            studentId: user._id,
+            studentName: user.name,
+            studentEmail: user.email,
+            panel: assignedPanel,
+          }
+        }
+      }
+    );
+
+    if (updateResult.modifiedCount === 0) {
+      return NextResponse.json({ 
+        success: false, 
+        message: "Booking conflict: This slot was updated by another candidate. Please try again." 
+      }, { status: 409 });
+    }
+
+    // Retrieve the updated slot details to sync with Google API
+    const updatedSlot = await Slot.findById(slotId);
+    if (!updatedSlot) {
+      return NextResponse.json({ success: false, message: "Error completing slot booking." }, { status: 500 });
+    }
+    slot = updatedSlot;
 
     // Google Calendar Sync
     try {
