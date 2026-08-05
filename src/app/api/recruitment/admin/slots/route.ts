@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import connectDB from "@/lib/db";
 import { User } from "@/models/User";
-import { Interview } from "@/models/Interview";
 import { Slot } from "@/models/Slot";
 import { verifyJWT } from "@/lib/jwt";
 
@@ -50,21 +49,10 @@ export async function POST(request: Request) {
 
     // 1. Check for Reset command
     if (body.action === "reset") {
-      await Interview.deleteMany({});
       await Slot.deleteMany({});
       
-      // Reset users state
-      await User.updateMany({}, {
-        $set: {
-          isEmailVerified: false,
-          hasSubmittedInterview: false,
-          emailVerificationOtp: null,
-          emailVerificationOtpExpires: null
-        }
-      });
-
-      console.log("🗑️ [Recruitment DB Reset] Cleared slots and interviews, reset user states.");
-      return NextResponse.json({ success: true, message: "Recruitment database successfully reset to clean state." });
+      console.log("🗑️ [Recruitment DB Reset] Cleared all interview slots.");
+      return NextResponse.json({ success: true, message: "All interview slots successfully deleted." });
     }
 
     // 2. Otherwise execute Slot Generation range

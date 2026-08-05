@@ -387,7 +387,7 @@ export default function DashboardPage() {
 
   // Reset entire recruitment DB
   const handleResetRecruitment = async () => {
-    if (!confirm("⚠️ WARNING: This will permanently delete all slots and interview applications in the database, resetting all candidates. Continue?")) return;
+    if (!confirm("⚠️ WARNING: This will permanently delete all interview slots in the database. Continue?")) return;
 
     setRecruitmentLoading(true);
     try {
@@ -827,11 +827,11 @@ export default function DashboardPage() {
               <Card className="border border-destructive/20 bg-destructive/5">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-bold text-destructive uppercase tracking-wider">Danger Reset Module</CardTitle>
-                  <CardDescription className="text-[10px]">Resets slots, clears candidates list, and updates user verification states.</CardDescription>
+                  <CardDescription className="text-[10px]">Permanently deletes all interview slots from the database.</CardDescription>
                 </CardHeader>
                 <CardContent className="pt-2">
                   <Button variant="destructive" size="sm" onClick={handleResetRecruitment} disabled={recruitmentLoading} className="gap-2 w-full text-xs font-bold uppercase">
-                    <Trash2 className="h-3.5 w-3.5" /> Purge Recruitment DB
+                    <Trash2 className="h-3.5 w-3.5" /> Delete All Slots
                   </Button>
                 </CardContent>
               </Card>
