@@ -26,7 +26,8 @@ import {
   Eye,
   EyeOff,
   Save,
-  Clock
+  Clock,
+  Coffee
 } from "lucide-react";
 
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
@@ -69,6 +70,8 @@ export default function DashboardPage() {
   const [endTime, setEndTime] = useState("17:00");
   const [duration, setDuration] = useState(60);
   const [maxStudentsInput, setMaxStudentsInput] = useState(4);
+  const [breaks, setBreaks] = useState<{ startTime: string; endTime: string }[]>([]);
+  const [activeDays, setActiveDays] = useState<number[]>([1, 2, 3, 4, 5]); // Default Mon-Fri
   const [genLoading, setGenLoading] = useState(false);
   const [genSuccess, setGenSuccess] = useState<string | null>(null);
   const [genError, setGenError] = useState<string | null>(null);
@@ -315,6 +318,9 @@ export default function DashboardPage() {
           endTime,
           duration: Number(duration),
           maxStudents: Number(maxStudentsInput),
+          timezoneOffset: new Date().getTimezoneOffset(),
+          breaks,
+          activeDays,
         }),
       });
       const data = await res.json();
@@ -322,6 +328,7 @@ export default function DashboardPage() {
         setGenSuccess(data.message);
         setStartDate("");
         setEndDate("");
+        setBreaks([]);
         await loadRecruitmentData();
       } else {
         setGenError(data.message || "Failed to generate slots.");
@@ -387,7 +394,7 @@ export default function DashboardPage() {
 
   // Reset entire recruitment DB
   const handleResetRecruitment = async () => {
-    if (!confirm("⚠️ WARNING: This will permanently delete all slots and interview applications in the database, resetting all candidates. Continue?")) return;
+    if (!confirm("⚠️ WARNING: This will permanently delete all interview slots in the database. Continue?")) return;
 
     setRecruitmentLoading(true);
     try {
@@ -786,7 +793,7 @@ export default function DashboardPage() {
 
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-1">
-                        <Label htmlFor="duration" className="text-xs">Slot Duration</Label>
+                        <Label htmlFor="duration" className="text-xs">Slot Duration (mins)</Label>
                         <Input
                           id="duration"
                           type="number"
@@ -815,6 +822,100 @@ export default function DashboardPage() {
                       </div>
                     </div>
 
+                    {/* Active Days Selection */}
+                    <div className="space-y-1.5 pt-1">
+                      <Label className="text-xs font-semibold text-foreground/80">Generate for Days</Label>
+                      <div className="flex flex-wrap gap-1 justify-between">
+                        {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((dayName, idx) => {
+                          const active = activeDays.includes(idx);
+                          return (
+                            <button
+                              key={idx}
+                              type="button"
+                              onClick={() => {
+                                if (active) {
+                                  setActiveDays(activeDays.filter((d) => d !== idx));
+                                } else {
+                                  setActiveDays([...activeDays, idx]);
+                                }
+                              }}
+                              className={`h-7 px-2.5 text-[10px] font-bold rounded-lg border transition-all flex items-center justify-center cursor-pointer ${
+                                active
+                                  ? "bg-primary border-primary text-primary-foreground shadow-sm shadow-primary/30"
+                                  : "bg-background border-border/40 text-muted-foreground hover:border-border"
+                              }`}
+                            >
+                              {dayName}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Break Times Controller */}
+                    <div className="space-y-2 border-t border-border/20 pt-3">
+                      <div className="flex items-center justify-between">
+                        <Label className="text-xs font-semibold text-foreground/80 flex items-center gap-1.5">
+                          <Coffee className="h-3.5 w-3.5 text-primary" /> Break Periods
+                        </Label>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => setBreaks([...breaks, { startTime: "13:00", endTime: "14:00" }])}
+                          className="h-6 text-[10px] gap-1 px-2 border-primary/20 text-primary hover:bg-primary/5"
+                        >
+                          <Plus className="h-3 w-3" /> Add Break
+                        </Button>
+                      </div>
+
+                      {breaks.length === 0 ? (
+                        <p className="text-[10px] text-muted-foreground italic pl-1">No breaks added yet (optional).</p>
+                      ) : (
+                        <div className="space-y-2 max-h-[140px] overflow-y-auto pr-1">
+                          {breaks.map((brk, idx) => (
+                            <div key={idx} className="flex items-center gap-2 bg-muted/30 p-1.5 rounded-lg border border-border/20">
+                              <div className="flex-1 grid grid-cols-2 gap-2">
+                                <div className="flex items-center gap-1 bg-background px-1.5 py-0.5 rounded border border-border/20">
+                                  <span className="text-[9px] text-muted-foreground uppercase">Start</span>
+                                  <input
+                                    type="time"
+                                    value={brk.startTime}
+                                    onChange={(e) => {
+                                      const updated = [...breaks];
+                                      updated[idx].startTime = e.target.value;
+                                      setBreaks(updated);
+                                    }}
+                                    className="bg-transparent border-0 text-[10px] focus:outline-none focus:ring-0 w-full text-foreground"
+                                  />
+                                </div>
+                                <div className="flex items-center gap-1 bg-background px-1.5 py-0.5 rounded border border-border/20">
+                                  <span className="text-[9px] text-muted-foreground uppercase">End</span>
+                                  <input
+                                    type="time"
+                                    value={brk.endTime}
+                                    onChange={(e) => {
+                                      const updated = [...breaks];
+                                      updated[idx].endTime = e.target.value;
+                                      setBreaks(updated);
+                                    }}
+                                    className="bg-transparent border-0 text-[10px] focus:outline-none focus:ring-0 w-full text-foreground"
+                                  />
+                                </div>
+                              </div>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                onClick={() => setBreaks(breaks.filter((_, i) => i !== idx))}
+                                className="h-6 w-6 p-0 text-destructive hover:bg-destructive/10 hover:text-destructive rounded"
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
                     <Button type="submit" disabled={genLoading} className="w-full h-10 flex justify-center items-center gap-2 text-xs font-bold uppercase mt-2">
                       {genLoading && <Loader2 className="h-4 w-4 animate-spin" />}
                       Batch Generate Slots 📅
@@ -827,11 +928,11 @@ export default function DashboardPage() {
               <Card className="border border-destructive/20 bg-destructive/5">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-bold text-destructive uppercase tracking-wider">Danger Reset Module</CardTitle>
-                  <CardDescription className="text-[10px]">Resets slots, clears candidates list, and updates user verification states.</CardDescription>
+                  <CardDescription className="text-[10px]">Permanently deletes all interview slots from the database.</CardDescription>
                 </CardHeader>
                 <CardContent className="pt-2">
                   <Button variant="destructive" size="sm" onClick={handleResetRecruitment} disabled={recruitmentLoading} className="gap-2 w-full text-xs font-bold uppercase">
-                    <Trash2 className="h-3.5 w-3.5" /> Purge Recruitment DB
+                    <Trash2 className="h-3.5 w-3.5" /> Delete All Slots
                   </Button>
                 </CardContent>
               </Card>
