@@ -938,7 +938,7 @@ export default function RecruitmentPage() {
                 <CardDescription>Your panel interview is scheduled and synced to your calendar.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid sm:grid-cols-3 gap-4 border border-green-500/10 p-4 rounded-lg bg-green-500/5 text-sm">
+                <div className="grid sm:grid-cols-2 gap-4 border border-green-500/10 p-4 rounded-lg bg-green-500/5 text-sm">
                   <div>
                     <span className="text-xs text-muted-foreground block">Interview Date</span>
                     <span className="font-bold text-foreground">{new Date(myBooking.dateTime).toLocaleDateString("en-IN", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}</span>
@@ -946,10 +946,6 @@ export default function RecruitmentPage() {
                   <div>
                     <span className="text-xs text-muted-foreground block">Time Window</span>
                     <span className="font-bold text-foreground">{formatTimeStr(myBooking.dateTime)} - {formatTimeStr(myBooking.endDateTime)}</span>
-                  </div>
-                  <div>
-                    <span className="text-xs text-muted-foreground block">Assigned Panel</span>
-                    <span className="font-bold text-primary text-base">Panel {myBooking.panel}</span>
                   </div>
                 </div>
 

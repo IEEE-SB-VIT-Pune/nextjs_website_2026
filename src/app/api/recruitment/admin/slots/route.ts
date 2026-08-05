@@ -50,19 +50,19 @@ export async function POST(request: Request) {
     // 1. Check for Reset command
     if (body.action === "reset") {
       await Slot.deleteMany({});
-      
+
       console.log("🗑️ [Recruitment DB Reset] Cleared all interview slots.");
       return NextResponse.json({ success: true, message: "All interview slots successfully deleted." });
     }
 
     // 2. Otherwise execute Slot Generation range
-    const { 
-      startDate, 
-      endDate, 
-      startTime, 
-      endTime, 
-      duration = 60, 
-      maxStudents = 4,
+    const {
+      startDate,
+      endDate,
+      startTime,
+      endTime,
+      duration = 60,
+      maxStudents = 10,
       timezoneOffset = 0,
       breaks = [],
       activeDays = [0, 1, 2, 3, 4, 5, 6]
@@ -129,23 +129,23 @@ export async function POST(request: Request) {
         let insideBreak = null;
         for (const brk of breaks) {
           if (!brk.startTime || !brk.endTime) continue;
-          
+
           let breakStart = new Date(`${dateStr}T${brk.startTime}:00Z`);
           breakStart.setMinutes(breakStart.getMinutes() + timezoneOffset);
-          
+
           let breakEnd = new Date(`${dateStr}T${brk.endTime}:00Z`);
           breakEnd.setMinutes(breakEnd.getMinutes() + timezoneOffset);
-          
+
           if (breakEnd <= breakStart) {
             breakEnd.setDate(breakEnd.getDate() + 1);
           }
-          
+
           if (slotTime >= breakStart && slotTime < breakEnd) {
             insideBreak = breakEnd;
             break;
           }
         }
-        
+
         if (insideBreak) {
           slotTime = new Date(insideBreak.getTime());
           continue;
@@ -160,13 +160,13 @@ export async function POST(request: Request) {
         let overlapsBreak = false;
         for (const brk of breaks) {
           if (!brk.startTime || !brk.endTime) continue;
-          
+
           let breakStart = new Date(`${dateStr}T${brk.startTime}:00Z`);
           breakStart.setMinutes(breakStart.getMinutes() + timezoneOffset);
-          
+
           let breakEnd = new Date(`${dateStr}T${brk.endTime}:00Z`);
           breakEnd.setMinutes(breakEnd.getMinutes() + timezoneOffset);
-          
+
           if (breakEnd <= breakStart) {
             breakEnd.setDate(breakEnd.getDate() + 1);
           }
@@ -192,9 +192,9 @@ export async function POST(request: Request) {
     }
 
     if (slotsList.length === 0) {
-      return NextResponse.json({ 
-        success: false, 
-        message: "No slots were generated. Check if the selected time range, break hours, or active days are conflicting." 
+      return NextResponse.json({
+        success: false,
+        message: "No slots were generated. Check if the selected time range, break hours, or active days are conflicting."
       }, { status: 400 });
     }
 
