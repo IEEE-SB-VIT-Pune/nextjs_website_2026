@@ -55,6 +55,15 @@ const UserSchema = new Schema(
       type: Boolean,
       default: false,
     },
+    // Password reset fields
+    resetPasswordOtp: {
+      type: String,
+      default: null,
+    },
+    resetPasswordOtpExpires: {
+      type: Date,
+      default: null,
+    },
   },
   {
     timestamps: true,
@@ -81,6 +90,8 @@ UserSchema.set("toJSON", {
     delete ret.password;
     delete ret.emailVerificationOtp;
     delete ret.emailVerificationOtpExpires;
+    delete ret.resetPasswordOtp;
+    delete ret.resetPasswordOtpExpires;
     return ret;
   },
 });
@@ -90,6 +101,8 @@ UserSchema.set("toObject", {
     delete ret.password;
     delete ret.emailVerificationOtp;
     delete ret.emailVerificationOtpExpires;
+    delete ret.resetPasswordOtp;
+    delete ret.resetPasswordOtpExpires;
     return ret;
   },
 });
