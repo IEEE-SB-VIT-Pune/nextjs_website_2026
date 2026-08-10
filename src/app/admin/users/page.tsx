@@ -16,7 +16,8 @@ import {
   AlertCircle, 
   CheckCircle2, 
   Send,
-  Search
+  Search,
+  BarChart3
 } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -206,12 +207,19 @@ export default function AdminUsersPage() {
           </div>
         </div>
 
-        <Button
-          onClick={() => openResetModal()}
-          className="flex items-center gap-2 bg-primary text-primary-foreground font-semibold shadow-lg hover:shadow-primary/20"
-        >
-          <KeyRound className="h-4 w-4" /> Update User Password
-        </Button>
+        <div className="flex items-center gap-2">
+          <Link href="/admin/interview-analytics">
+            <Button variant="outline" className="flex items-center gap-2 font-semibold">
+              <BarChart3 className="h-4 w-4 text-primary" /> Interview Analytics
+            </Button>
+          </Link>
+          <Button
+            onClick={() => openResetModal()}
+            className="flex items-center gap-2 bg-primary text-primary-foreground font-semibold shadow-lg hover:shadow-primary/20"
+          >
+            <KeyRound className="h-4 w-4" /> Update User Password
+          </Button>
+        </div>
       </header>
 
       {/* Main List */}
