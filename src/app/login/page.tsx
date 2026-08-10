@@ -136,14 +136,12 @@ export default function LoginPage() {
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
                 <Label htmlFor="password">Password</Label>
-                <button
-                  type="button"
-                  onClick={() => alert("Forgot Password helper: Please contact the System Administrator to reset your credentials.")}
+                <Link
+                  href="/forgot-password"
                   className="text-xs text-primary hover:underline font-semibold focus-visible:outline-none"
-                  disabled={loading}
                 >
                   Forgot Password?
-                </button>
+                </Link>
               </div>
               <div className="relative">
                 {/* <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" /> */}
