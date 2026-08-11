@@ -517,10 +517,6 @@ export default function AdminInterviewAnalyticsPage() {
         <td style="padding: 10px; border: 1px solid #e2e8f0;">
           <strong style="color: #0f172a; font-size: 13px;">${c.name}</strong>
         </td>
-        <td style="padding: 10px; border: 1px solid #e2e8f0; font-family: monospace;">
-          ${c.email}<br>
-          <span style="color: #64748b; font-size: 11px;">📞 ${c.phone}</span>
-        </td>
         <td style="padding: 10px; border: 1px solid #e2e8f0;">${c.branch || "N/A"}</td>
         <td style="padding: 10px; border: 1px solid #e2e8f0; font-weight: 600; color: #0284c7;">
           ${(c.domains || []).join(", ") || "N/A"}
@@ -581,7 +577,6 @@ export default function AdminInterviewAnalyticsPage() {
             <tr>
               <th style="width: 40px; text-align: center;">#</th>
               <th>Candidate Name</th>
-              <th>Email & Contact Phone</th>
               <th>Branch</th>
               <th>Applied Domains</th>
               <th>Interview Date</th>
