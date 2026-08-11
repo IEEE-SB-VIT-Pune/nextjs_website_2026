@@ -578,6 +578,15 @@ def generate_standalone_html(payload):
       }});
     }}
 
+    function getExportFileName(ext) {{
+      const domainVal = document.getElementById("filter-domain") ? document.getElementById("filter-domain").value : "";
+      const dateVal = document.getElementById("filter-date") ? document.getElementById("filter-date").value : "";
+      const sanitize = (str) => (str || "").replace(/[^a-zA-Z0-9_-]/g, "_");
+      const domainPrefix = domainVal ? sanitize(domainVal) : "All_Domains";
+      const datePart = dateVal ? `_${{sanitize(dateVal)}}` : "";
+      return `${{domainPrefix}}${{datePart}}_Candidates_${{filteredCandidates.length}}_users.${{ext}}`;
+    }}
+
     function exportToExcel() {{
       if (filteredCandidates.length === 0) {{
         alert("No candidates to export.");
@@ -666,7 +675,7 @@ def generate_standalone_html(payload):
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.setAttribute("href", url);
-      link.setAttribute("download", `filtered_candidates_${{filteredCandidates.length}}_users.xls`);
+      link.setAttribute("download", getExportFileName("xls"));
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -688,7 +697,7 @@ def generate_standalone_html(payload):
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.setAttribute("href", url);
-      link.setAttribute("download", `filtered_candidates_${{filteredCandidates.length}}_users.csv`);
+      link.setAttribute("download", getExportFileName("csv"));
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -704,7 +713,7 @@ def generate_standalone_html(payload):
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.setAttribute("href", url);
-      link.setAttribute("download", `filtered_candidates_${{filteredCandidates.length}}_users.json`);
+      link.setAttribute("download", getExportFileName("json"));
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);

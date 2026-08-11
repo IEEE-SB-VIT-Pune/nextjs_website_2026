@@ -125,6 +125,15 @@ export default function AdminInterviewAnalyticsPage() {
     setFilteredCandidates(result);
   }, [searchQuery, selectedDate, selectedTimeSlot, selectedDomain, selectedPanel, selectedStatus, candidates]);
 
+  // Dynamic filename helper based on selected domain and filter parameters
+  const getExportFileName = (ext: string) => {
+    const sanitize = (str: string) => str.replace(/[^a-zA-Z0-9_-]/g, "_");
+    const domainPrefix = selectedDomain ? sanitize(selectedDomain) : "All_Domains";
+    const datePart = selectedDate ? `_${sanitize(selectedDate)}` : "";
+    const panelPart = selectedPanel ? `_${sanitize(selectedPanel)}` : "";
+    return `${domainPrefix}${datePart}${panelPart}_Candidates_${filteredCandidates.length}_users.${ext}`;
+  };
+
   // Export ONLY Filtered Candidates to CSV
   const exportFilteredCSV = () => {
     if (filteredCandidates.length === 0) {
@@ -142,7 +151,7 @@ export default function AdminInterviewAnalyticsPage() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.setAttribute("href", url);
-    link.setAttribute("download", `filtered_candidates_${filteredCandidates.length}_users.csv`);
+    link.setAttribute("download", getExportFileName("csv"));
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -200,10 +209,11 @@ export default function AdminInterviewAnalyticsPage() {
       { wch: 30 }, // LinkedIn
     ];
 
+    const worksheetTabName = selectedDomain ? selectedDomain.substring(0, 30) : "Filtered Candidates";
     const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Filtered Candidate Evaluation");
+    XLSX.utils.book_append_sheet(workbook, worksheet, worksheetTabName);
 
-    XLSX.writeFile(workbook, `filtered_candidates_evaluation_${filteredCandidates.length}_users.xlsx`);
+    XLSX.writeFile(workbook, getExportFileName("xlsx"));
   };
 
   // Export ONLY Filtered Candidates to JSON
@@ -217,7 +227,7 @@ export default function AdminInterviewAnalyticsPage() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.setAttribute("href", url);
-    link.setAttribute("download", `filtered_candidates_${filteredCandidates.length}_users.json`);
+    link.setAttribute("download", getExportFileName("json"));
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
