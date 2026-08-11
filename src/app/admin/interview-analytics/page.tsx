@@ -143,6 +143,101 @@ export default function AdminInterviewAnalyticsPage() {
     document.body.removeChild(link);
   };
 
+  // Export ONLY Filtered Candidates to Excel (.xls / .xlsx format)
+  const exportFilteredExcel = () => {
+    if (filteredCandidates.length === 0) {
+      alert("No candidates available in current filter selection.");
+      return;
+    }
+
+    const escapeXml = (str: string) =>
+      (str || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&apos;");
+
+    let excelXml = `<?xml version="1.0"?>
+<?mso-application progid="Excel.Sheet"?>
+<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
+ xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:x="urn:schemas-microsoft-com:office:excel"
+ xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">
+ <Styles>
+  <Style ss:ID="Header">
+   <Font ss:Bold="1" ss:Color="#FFFFFF"/>
+   <Interior ss:Color="#0066CC" ss:Pattern="Solid"/>
+   <Alignment ss:Horizontal="Center" ss:Vertical="Center"/>
+  </Style>
+  <Style ss:ID="Booked">
+   <Font ss:Color="#059669" ss:Bold="1"/>
+  </Style>
+  <Style ss:ID="Cancelled">
+   <Font ss:Color="#DC2626" ss:Bold="1"/>
+  </Style>
+  <Style ss:ID="Pending">
+   <Font ss:Color="#D97706" ss:Bold="1"/>
+  </Style>
+ </Styles>
+ <Worksheet ss:Name="Filtered Candidates">
+  <Table>
+   <Column ss:Width="50"/>
+   <Column ss:Width="160"/>
+   <Column ss:Width="190"/>
+   <Column ss:Width="110"/>
+   <Column ss:Width="160"/>
+   <Column ss:Width="150"/>
+   <Column ss:Width="100"/>
+   <Column ss:Width="130"/>
+   <Column ss:Width="80"/>
+   <Column ss:Width="90"/>
+   <Row ss:Height="24">
+    <Cell ss:StyleID="Header"><Data ss:Type="String">Sr No.</Data></Cell>
+    <Cell ss:StyleID="Header"><Data ss:Type="String">Candidate Name</Data></Cell>
+    <Cell ss:StyleID="Header"><Data ss:Type="String">Email Address</Data></Cell>
+    <Cell ss:StyleID="Header"><Data ss:Type="String">Phone Number</Data></Cell>
+    <Cell ss:StyleID="Header"><Data ss:Type="String">Branch</Data></Cell>
+    <Cell ss:StyleID="Header"><Data ss:Type="String">Domain Preferences</Data></Cell>
+    <Cell ss:StyleID="Header"><Data ss:Type="String">Interview Date</Data></Cell>
+    <Cell ss:StyleID="Header"><Data ss:Type="String">Time Slot</Data></Cell>
+    <Cell ss:StyleID="Header"><Data ss:Type="String">Panel</Data></Cell>
+    <Cell ss:StyleID="Header"><Data ss:Type="String">Status</Data></Cell>
+   </Row>`;
+
+    filteredCandidates.forEach((c, idx) => {
+      const statusStyle = c.status === "BOOKED" ? "Booked" : c.status === "CANCELLED" ? "Cancelled" : "Pending";
+
+      excelXml += `
+   <Row>
+    <Cell><Data ss:Type="Number">${idx + 1}</Data></Cell>
+    <Cell><Data ss:Type="String">${escapeXml(c.name)}</Data></Cell>
+    <Cell><Data ss:Type="String">${escapeXml(c.email)}</Data></Cell>
+    <Cell><Data ss:Type="String">${escapeXml(c.phone)}</Data></Cell>
+    <Cell><Data ss:Type="String">${escapeXml(c.branch)}</Data></Cell>
+    <Cell><Data ss:Type="String">${escapeXml((c.domains || []).join(", "))}</Data></Cell>
+    <Cell><Data ss:Type="String">${escapeXml(c.date)}</Data></Cell>
+    <Cell><Data ss:Type="String">${escapeXml(c.time_slot)}</Data></Cell>
+    <Cell><Data ss:Type="String">${escapeXml(c.panel)}</Data></Cell>
+    <Cell ss:StyleID="${statusStyle}"><Data ss:Type="String">${escapeXml(c.status)}</Data></Cell>
+   </Row>`;
+    });
+
+    excelXml += `
+  </Table>
+ </Worksheet>
+</Workbook>`;
+
+    const blob = new Blob([excelXml], { type: "application/vnd.ms-excel" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `filtered_candidates_${filteredCandidates.length}_users.xls`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   // Export ONLY Filtered Candidates to JSON
   const exportFilteredJSON = () => {
     if (filteredCandidates.length === 0) {
@@ -292,6 +387,15 @@ export default function AdminInterviewAnalyticsPage() {
 
         {/* Dedicated Export Actions Toolbar for Filtered Users Only */}
         <div className="flex flex-wrap items-center gap-2">
+          <Button
+            onClick={exportFilteredExcel}
+            variant="outline"
+            size="sm"
+            className="gap-1 text-xs font-semibold border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10"
+          >
+            <FileSpreadsheet className="h-3.5 w-3.5" /> Excel (.xls) (Filtered)
+          </Button>
+
           <Button
             onClick={exportFilteredCSV}
             variant="outline"
@@ -495,7 +599,15 @@ export default function AdminInterviewAnalyticsPage() {
               Live records from MongoDB database based on active filter choices
             </CardDescription>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              onClick={exportFilteredExcel}
+              variant="outline"
+              size="sm"
+              className="h-8 text-xs font-semibold gap-1 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10"
+            >
+              <FileSpreadsheet className="h-3.5 w-3.5" /> Export Filtered Excel ({filteredCandidates.length})
+            </Button>
             <Button
               onClick={exportFilteredCSV}
               variant="outline"
