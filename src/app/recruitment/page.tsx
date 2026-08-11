@@ -702,7 +702,7 @@ export default function RecruitmentPage() {
                     "Management",
                     "PR & SM",
                     "Sponsorship",
-                    "Technical",
+                    "Technicxal",
                     "Video Editing"
                   ].map((domain) => (
                     <div key={domain} className="flex items-center space-x-2">

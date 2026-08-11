@@ -108,6 +108,8 @@ export async function GET() {
             time_slot: timeStr,
             panel: `Panel ${st.panel || 1}`,
             status: "BOOKED",
+            allottedBy: st.allottedBy || (st.isAdminAllotted ? "ADMIN" : "STUDENT"),
+            isAdminAllotted: !!(st.isAdminAllotted || st.allottedBy === "ADMIN"),
             github: inv?.github || "",
             linkedin: inv?.linkedin || "",
             skills: inv?.skills || "",
@@ -121,10 +123,11 @@ export async function GET() {
       }
     });
 
-    // Also include candidates from Interview collection who haven't booked a slot yet
+    // Also include candidates from Interview collection who haven't booked a slot yet (ONLY those who filled out the recruitment form)
     dbInterviews.forEach((inv: any) => {
       const email = inv.email ? inv.email.toLowerCase().trim() : "";
       if (email && !bookedEmails.has(email)) {
+        bookedEmails.add(email);
         const domainList: string[] = Array.isArray(inv.domain) ? inv.domain : inv.domain ? [inv.domain] : [];
         candidates.push({
           timestamp: inv.createdAt ? new Date(inv.createdAt).toLocaleString("en-IN") : "",
@@ -138,6 +141,8 @@ export async function GET() {
           time_slot: "Unscheduled",
           panel: "N/A",
           status: "PENDING_BOOKING",
+          allottedBy: "NONE",
+          isAdminAllotted: false,
           github: inv.github || "",
           linkedin: inv.linkedin || "",
           skills: inv.skills || "",
@@ -154,8 +159,11 @@ export async function GET() {
     if (candidates.length > 0) {
       const total_slots = candidates.length;
       const booked_slots = candidates.filter((c) => c.status === "BOOKED").length;
+      const pending_slots = candidates.filter((c) => c.status === "PENDING_BOOKING").length;
+      const admin_allotted_slots = candidates.filter((c) => c.status === "BOOKED" && c.isAdminAllotted).length;
+      const self_booked_slots = candidates.filter((c) => c.status === "BOOKED" && !c.isAdminAllotted).length;
       const cancelled_slots = candidates.filter((c) => c.status === "CANCELLED").length;
-      const total_applicants = dbInterviews.length || dbUsers.length;
+      const total_applicants = Math.max(candidates.length, dbInterviews.length, dbUsers.length);
 
       const domain_counts: Record<string, number> = {};
       const date_counts: Record<string, number> = {};
@@ -191,6 +199,9 @@ export async function GET() {
       const stats = {
         total_slots,
         booked_slots,
+        pending_slots,
+        admin_allotted_slots,
+        self_booked_slots,
         cancelled_slots,
         total_applicants,
         domain_counts,

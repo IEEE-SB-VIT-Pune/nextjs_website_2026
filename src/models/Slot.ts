@@ -17,12 +17,20 @@ const StudentBookingSchema = new Schema({
   panel: {
     type: Number,
     min: 1,
-    max: 4,
     required: true,
   },
   bookedAt: {
     type: Date,
     default: Date.now,
+  },
+  allottedBy: {
+    type: String,
+    enum: ["STUDENT", "ADMIN"],
+    default: "STUDENT",
+  },
+  isAdminAllotted: {
+    type: Boolean,
+    default: false,
   },
 });
 
