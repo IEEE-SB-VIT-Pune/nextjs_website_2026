@@ -118,6 +118,11 @@ def process_data():
             "github": resp_info.get("github", ""),
             "linkedin": resp_info.get("linkedin", ""),
             "skills": resp_info.get("skills", ""),
+            "whyPart": resp_info.get("why_join", ""),
+            "whyWork": resp_info.get("why_domains", ""),
+            "projects": resp_info.get("projects", ""),
+            "expectations": resp_info.get("expectations", ""),
+            "vagera": resp_info.get("extra", ""),
         }
         candidates.append(candidate)
 

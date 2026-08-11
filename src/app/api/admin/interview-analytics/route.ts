@@ -111,6 +111,11 @@ export async function GET() {
             github: inv?.github || "",
             linkedin: inv?.linkedin || "",
             skills: inv?.skills || "",
+            whyPart: inv?.whyPart || "",
+            whyWork: inv?.whyWork || "",
+            projects: inv?.projects || "",
+            expectations: inv?.expectations || "",
+            vagera: inv?.vagera || "",
           });
         });
       }
@@ -136,6 +141,11 @@ export async function GET() {
           github: inv.github || "",
           linkedin: inv.linkedin || "",
           skills: inv.skills || "",
+          whyPart: inv.whyPart || "",
+          whyWork: inv.whyWork || "",
+          projects: inv.projects || "",
+          expectations: inv.expectations || "",
+          vagera: inv.vagera || "",
         });
       }
     });

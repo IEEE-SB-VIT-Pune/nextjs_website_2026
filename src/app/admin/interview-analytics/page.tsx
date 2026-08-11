@@ -17,7 +17,10 @@ import {
   Database,
   Printer,
   FileJson,
-  FileSpreadsheet
+  FileSpreadsheet,
+  ChevronDown,
+  ChevronUp,
+  FileText
 } from "lucide-react";
 
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
@@ -25,6 +28,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { getProfile, type UserProfile } from "@/services/auth";
+import * as XLSX from "xlsx";
 
 export default function AdminInterviewAnalyticsPage() {
   const router = useRouter();
@@ -35,6 +39,7 @@ export default function AdminInterviewAnalyticsPage() {
   const [stats, setStats] = useState<any>(null);
   const [candidates, setCandidates] = useState<any[]>([]);
   const [filteredCandidates, setFilteredCandidates] = useState<any[]>([]);
+  const [expandedCandidateIndex, setExpandedCandidateIndex] = useState<number | null>(null);
 
   // Filter States
   const [searchQuery, setSearchQuery] = useState("");
@@ -143,99 +148,62 @@ export default function AdminInterviewAnalyticsPage() {
     document.body.removeChild(link);
   };
 
-  // Export ONLY Filtered Candidates to Excel (.xls / .xlsx format)
+  // Export ONLY Filtered Candidates to Native Binary Excel (.xlsx format)
   const exportFilteredExcel = () => {
     if (filteredCandidates.length === 0) {
       alert("No candidates available in current filter selection.");
       return;
     }
 
-    const escapeXml = (str: string) =>
-      (str || "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&apos;");
+    const exportData = filteredCandidates.map((c, idx) => ({
+      "Sr No": idx + 1,
+      "Candidate Name": c.name || "N/A",
+      "Email Address": c.email || "N/A",
+      "Phone Number": c.phone || "N/A",
+      "Branch": c.branch || "N/A",
+      "Domain Preferences": (c.domains || []).join(", "),
+      "Interview Date": c.date || "N/A",
+      "Time Slot": c.time_slot || "N/A",
+      "Panel": c.panel || "N/A",
+      "Booking Status": c.status || "N/A",
+      "Key Skills": c.skills || "N/A",
+      "Why Join IEEE": c.whyPart || "N/A",
+      "Why Work in Domains": c.whyWork || "N/A",
+      "Projects Completed": c.projects || "N/A",
+      "Expectations from IEEE": c.expectations || "N/A",
+      "Extra Details": c.vagera || "N/A",
+      "GitHub Link": c.github || "",
+      "LinkedIn Link": c.linkedin || "",
+    }));
 
-    let excelXml = `<?xml version="1.0"?>
-<?mso-application progid="Excel.Sheet"?>
-<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
- xmlns:o="urn:schemas-microsoft-com:office:office"
- xmlns:x="urn:schemas-microsoft-com:office:excel"
- xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">
- <Styles>
-  <Style ss:ID="Header">
-   <Font ss:Bold="1" ss:Color="#FFFFFF"/>
-   <Interior ss:Color="#0066CC" ss:Pattern="Solid"/>
-   <Alignment ss:Horizontal="Center" ss:Vertical="Center"/>
-  </Style>
-  <Style ss:ID="Booked">
-   <Font ss:Color="#059669" ss:Bold="1"/>
-  </Style>
-  <Style ss:ID="Cancelled">
-   <Font ss:Color="#DC2626" ss:Bold="1"/>
-  </Style>
-  <Style ss:ID="Pending">
-   <Font ss:Color="#D97706" ss:Bold="1"/>
-  </Style>
- </Styles>
- <Worksheet ss:Name="Filtered Candidates">
-  <Table>
-   <Column ss:Width="50"/>
-   <Column ss:Width="160"/>
-   <Column ss:Width="190"/>
-   <Column ss:Width="110"/>
-   <Column ss:Width="160"/>
-   <Column ss:Width="150"/>
-   <Column ss:Width="100"/>
-   <Column ss:Width="130"/>
-   <Column ss:Width="80"/>
-   <Column ss:Width="90"/>
-   <Row ss:Height="24">
-    <Cell ss:StyleID="Header"><Data ss:Type="String">Sr No.</Data></Cell>
-    <Cell ss:StyleID="Header"><Data ss:Type="String">Candidate Name</Data></Cell>
-    <Cell ss:StyleID="Header"><Data ss:Type="String">Email Address</Data></Cell>
-    <Cell ss:StyleID="Header"><Data ss:Type="String">Phone Number</Data></Cell>
-    <Cell ss:StyleID="Header"><Data ss:Type="String">Branch</Data></Cell>
-    <Cell ss:StyleID="Header"><Data ss:Type="String">Domain Preferences</Data></Cell>
-    <Cell ss:StyleID="Header"><Data ss:Type="String">Interview Date</Data></Cell>
-    <Cell ss:StyleID="Header"><Data ss:Type="String">Time Slot</Data></Cell>
-    <Cell ss:StyleID="Header"><Data ss:Type="String">Panel</Data></Cell>
-    <Cell ss:StyleID="Header"><Data ss:Type="String">Status</Data></Cell>
-   </Row>`;
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
 
-    filteredCandidates.forEach((c, idx) => {
-      const statusStyle = c.status === "BOOKED" ? "Booked" : c.status === "CANCELLED" ? "Cancelled" : "Pending";
+    // Set column widths for readability
+    worksheet["!cols"] = [
+      { wch: 8 },  // Sr No
+      { wch: 22 }, // Name
+      { wch: 28 }, // Email
+      { wch: 15 }, // Phone
+      { wch: 22 }, // Branch
+      { wch: 25 }, // Domains
+      { wch: 14 }, // Date
+      { wch: 20 }, // Time Slot
+      { wch: 12 }, // Panel
+      { wch: 16 }, // Status
+      { wch: 30 }, // Skills
+      { wch: 35 }, // Why Join
+      { wch: 35 }, // Why Work
+      { wch: 30 }, // Projects
+      { wch: 30 }, // Expectations
+      { wch: 25 }, // Extra Details
+      { wch: 30 }, // GitHub
+      { wch: 30 }, // LinkedIn
+    ];
 
-      excelXml += `
-   <Row>
-    <Cell><Data ss:Type="Number">${idx + 1}</Data></Cell>
-    <Cell><Data ss:Type="String">${escapeXml(c.name)}</Data></Cell>
-    <Cell><Data ss:Type="String">${escapeXml(c.email)}</Data></Cell>
-    <Cell><Data ss:Type="String">${escapeXml(c.phone)}</Data></Cell>
-    <Cell><Data ss:Type="String">${escapeXml(c.branch)}</Data></Cell>
-    <Cell><Data ss:Type="String">${escapeXml((c.domains || []).join(", "))}</Data></Cell>
-    <Cell><Data ss:Type="String">${escapeXml(c.date)}</Data></Cell>
-    <Cell><Data ss:Type="String">${escapeXml(c.time_slot)}</Data></Cell>
-    <Cell><Data ss:Type="String">${escapeXml(c.panel)}</Data></Cell>
-    <Cell ss:StyleID="${statusStyle}"><Data ss:Type="String">${escapeXml(c.status)}</Data></Cell>
-   </Row>`;
-    });
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Filtered Candidate Evaluation");
 
-    excelXml += `
-  </Table>
- </Worksheet>
-</Workbook>`;
-
-    const blob = new Blob([excelXml], { type: "application/vnd.ms-excel" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.setAttribute("href", url);
-    link.setAttribute("download", `filtered_candidates_${filteredCandidates.length}_users.xls`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    XLSX.writeFile(workbook, `filtered_candidates_evaluation_${filteredCandidates.length}_users.xlsx`);
   };
 
   // Export ONLY Filtered Candidates to JSON
@@ -393,7 +361,7 @@ export default function AdminInterviewAnalyticsPage() {
             size="sm"
             className="gap-1 text-xs font-semibold border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10"
           >
-            <FileSpreadsheet className="h-3.5 w-3.5" /> Excel (.xls) (Filtered)
+            <FileSpreadsheet className="h-3.5 w-3.5" /> Excel (.xlsx) (Filtered)
           </Button>
 
           <Button
@@ -649,53 +617,137 @@ export default function AdminInterviewAnalyticsPage() {
               ) : (
                 filteredCandidates.map((c, i) => {
                   const isBooked = c.status === "BOOKED";
+                  const isExpanded = expandedCandidateIndex === i;
+                  const hasEvaluationData = c.whyPart || c.whyWork || c.skills || c.projects || c.expectations;
+
                   return (
-                    <tr key={i} className="hover:bg-muted/10 transition-colors">
-                      <td className="p-3.5">
-                        <div className="font-bold text-foreground">{c.name}</div>
-                        <div className="text-[11px] text-muted-foreground font-mono flex items-center gap-1">
-                          <Mail className="h-3 w-3 text-muted-foreground/60" /> {c.email}
-                        </div>
-                        <div className="text-[10px] text-muted-foreground/80 font-mono flex items-center gap-1">
-                          <Phone className="h-2.5 w-2.5 text-muted-foreground/50" /> {c.phone}
-                        </div>
-                      </td>
+                    <React.Fragment key={i}>
+                      <tr className="hover:bg-muted/10 transition-colors">
+                        <td className="p-3.5">
+                          <div className="font-bold text-foreground flex items-center justify-between gap-2">
+                            <span>{c.name}</span>
+                            {hasEvaluationData && (
+                              <button
+                                type="button"
+                                onClick={() => setExpandedCandidateIndex(isExpanded ? null : i)}
+                                className="text-[10px] text-primary hover:underline font-bold flex items-center gap-0.5 bg-primary/10 border border-primary/20 px-1.5 py-0.5 rounded"
+                              >
+                                <FileText className="h-3 w-3" />
+                                {isExpanded ? "Hide Evaluation" : "View Evaluation"}
+                                {isExpanded ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+                              </button>
+                            )}
+                          </div>
+                          <div className="text-[11px] text-muted-foreground font-mono flex items-center gap-1">
+                            <Mail className="h-3 w-3 text-muted-foreground/60" /> {c.email}
+                          </div>
+                          <div className="text-[10px] text-muted-foreground/80 font-mono flex items-center gap-1">
+                            <Phone className="h-2.5 w-2.5 text-muted-foreground/50" /> {c.phone}
+                          </div>
+                        </td>
 
-                      <td className="p-3.5 text-muted-foreground font-medium">{c.branch || "N/A"}</td>
+                        <td className="p-3.5 text-muted-foreground font-medium">{c.branch || "N/A"}</td>
 
-                      <td className="p-3.5">
-                        <div className="flex flex-wrap gap-1">
-                          {(c.domains || []).map((dom: string, dIdx: number) => (
-                            <span
-                              key={dIdx}
-                              className="px-1.5 py-0.5 rounded bg-primary/10 text-primary border border-primary/20 text-[10px] font-semibold"
-                            >
-                              {dom}
-                            </span>
-                          ))}
-                        </div>
-                      </td>
+                        <td className="p-3.5">
+                          <div className="flex flex-wrap gap-1">
+                            {(c.domains || []).map((dom: string, dIdx: number) => (
+                              <span
+                                key={dIdx}
+                                className="px-1.5 py-0.5 rounded bg-primary/10 text-primary border border-primary/20 text-[10px] font-semibold"
+                              >
+                                {dom}
+                              </span>
+                            ))}
+                          </div>
+                        </td>
 
-                      <td className="p-3.5 font-mono text-muted-foreground">{c.date || "N/A"}</td>
+                        <td className="p-3.5 font-mono text-muted-foreground">{c.date || "N/A"}</td>
 
-                      <td className="p-3.5 font-mono text-muted-foreground">{c.time_slot || "N/A"}</td>
+                        <td className="p-3.5 font-mono text-muted-foreground">{c.time_slot || "N/A"}</td>
 
-                      <td className="p-3.5 text-center font-bold text-primary">{c.panel || "N/A"}</td>
+                        <td className="p-3.5 text-center font-bold text-primary">{c.panel || "N/A"}</td>
 
-                      <td className="p-3.5 text-right">
-                        <span
-                          className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border ${isBooked
-                            ? "bg-green-500/10 text-green-400 border-green-500/20"
-                            : c.status === "PENDING_BOOKING"
-                              ? "bg-amber-500/10 text-amber-400 border-amber-500/20"
-                              : "bg-destructive/10 text-destructive border-destructive/20"
-                            }`}
-                        >
-                          {isBooked ? <CheckCircle2 className="h-3 w-3" /> : <XCircle className="h-3 w-3" />}
-                          {c.status}
-                        </span>
-                      </td>
-                    </tr>
+                        <td className="p-3.5 text-right">
+                          <span
+                            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border ${isBooked
+                              ? "bg-green-500/10 text-green-400 border-green-500/20"
+                              : c.status === "PENDING_BOOKING"
+                                ? "bg-amber-500/10 text-amber-400 border-amber-500/20"
+                                : "bg-destructive/10 text-destructive border-destructive/20"
+                              }`}
+                          >
+                            {isBooked ? <CheckCircle2 className="h-3 w-3" /> : <XCircle className="h-3 w-3" />}
+                            {c.status}
+                          </span>
+                        </td>
+                      </tr>
+
+                      {/* Expandable Evaluation Form Details */}
+                      {isExpanded && (
+                        <tr className="bg-primary/5 border-b border-border/40">
+                          <td colSpan={7} className="p-4 space-y-3">
+                            <div className="text-xs font-bold uppercase tracking-wider text-primary flex items-center gap-1.5 border-b border-primary/20 pb-1.5">
+                              <FileText className="h-4 w-4" /> Candidate Interview Form Evaluation Details
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 text-xs">
+                              {c.skills && (
+                                <div className="bg-background/60 p-2.5 rounded border border-border/50 space-y-1">
+                                  <span className="font-bold text-muted-foreground uppercase text-[10px]">Key Skills & Tech:</span>
+                                  <p className="text-foreground">{c.skills}</p>
+                                </div>
+                              )}
+
+                              {c.whyPart && (
+                                <div className="bg-background/60 p-2.5 rounded border border-border/50 space-y-1">
+                                  <span className="font-bold text-muted-foreground uppercase text-[10px]">Why Join IEEE:</span>
+                                  <p className="text-foreground">{c.whyPart}</p>
+                                </div>
+                              )}
+
+                              {c.whyWork && (
+                                <div className="bg-background/60 p-2.5 rounded border border-border/50 space-y-1">
+                                  <span className="font-bold text-muted-foreground uppercase text-[10px]">Why Work in Domains:</span>
+                                  <p className="text-foreground">{c.whyWork}</p>
+                                </div>
+                              )}
+
+                              {c.projects && (
+                                <div className="bg-background/60 p-2.5 rounded border border-border/50 space-y-1">
+                                  <span className="font-bold text-muted-foreground uppercase text-[10px]">Projects Completed:</span>
+                                  <p className="text-foreground">{c.projects}</p>
+                                </div>
+                              )}
+
+                              {c.expectations && (
+                                <div className="bg-background/60 p-2.5 rounded border border-border/50 space-y-1">
+                                  <span className="font-bold text-muted-foreground uppercase text-[10px]">Expectations from IEEE:</span>
+                                  <p className="text-foreground">{c.expectations}</p>
+                                </div>
+                              )}
+
+                              {(c.github || c.linkedin) && (
+                                <div className="bg-background/60 p-2.5 rounded border border-border/50 space-y-1">
+                                  <span className="font-bold text-muted-foreground uppercase text-[10px]">Profiles & Links:</span>
+                                  <div className="flex flex-col gap-1 text-[11px]">
+                                    {c.github && (
+                                      <a href={c.github} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-mono truncate">
+                                        GitHub: {c.github}
+                                      </a>
+                                    )}
+                                    {c.linkedin && (
+                                      <a href={c.linkedin} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-mono truncate">
+                                        LinkedIn: {c.linkedin}
+                                      </a>
+                                    )}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </React.Fragment>
                   );
                 })
               )}
