@@ -3,6 +3,8 @@ import { v4 as uuidv4 } from "uuid";
 import fs from "fs";
 import path from "path";
 import nodemailer from "nodemailer";
+import connectDB from "@/lib/db";
+import { SystemConfig } from "@/models/SystemConfig";
 
 let oAuth2Client: any = null;
 let calendar: any = null;
@@ -422,6 +424,14 @@ const cleanEnvVar = (val: string | undefined) => {
 
 async function sendTokenExpiredEmailAlert(errorMessage: string) {
   try {
+    // Check if admin has stopped sending token expiration alert emails
+    await connectDB();
+    const alertConfig = await SystemConfig.findOne({ key: "tokenAlertEmail" });
+    if (alertConfig && alertConfig.value === false) {
+      console.log("ℹ️ [Alert Mail] Token expiration email alert sending is STOPPED (disabled in Admin Dashboard settings).");
+      return;
+    }
+
     const smtpHost = cleanEnvVar(process.env.SMTP_HOST);
     const smtpPort = Number(cleanEnvVar(process.env.SMTP_PORT));
     const smtpSecure = cleanEnvVar(process.env.SMTP_SECURE) === "true";

@@ -11,6 +11,7 @@ import { Instagram, Linkedin } from "lucide-react";
 import teamImage from "@/assets/images/aboutUs/TeamImage.jpg";
 import medha from "@/assets/images/aboutUs/Faculty/medha.png";
 import jabade from "@/assets/images/aboutUs/Faculty/vaishali2.png";
+import amar from "@/assets/images/aboutUs/Faculty/amar.png";
 
 import shreeram from "@/assets/images/aboutUs/core/core_26-27/Shreeram_Ujlambkar_.png";
 import shalvi from "@/assets/images/aboutUs/core/core_26-27/shalvi_maheshwari.png";
@@ -30,6 +31,7 @@ import kalyani from "@/assets/images/aboutUs/core/core_26-27/Kalyani_Patil.png";
 import yashGandhi from "@/assets/images/aboutUs/core/core_26-27/Yash Gandhi .png";
 
 const faculty = [
+  { name: "Prof. Dr. Amar Buchade", role: "Branch Counselor", image: amar },
   { name: "Prof. Dr. Medha Wyawahare", role: "Branch Mentor", image: medha },
   { name: "Prof. Dr. Vaishali Jabade", role: "Branch Counselor", image: jabade },
 ];
@@ -221,7 +223,7 @@ export default function AboutPage() {
             {/* Faculty Section */}
             <div>
               <h3 className="text-xl font-semibold mb-6 text-center">Faculty Mentors</h3>
-              <div className="grid sm:grid-cols-2 gap-6 max-w-xl mx-auto">
+              <div className="grid sm:grid-cols-3 gap-6 max-w-xl mx-auto">
                 {faculty.map((member) => (
                   <div key={member.name} className="p-3 rounded-2xl border-4 border-stone-300 bg-card/50 hover:scale-105 transition-all aspect-square max-w-[240px] w-full mx-auto flex items-center justify-center">
                     <div className="flex flex-col items-center gap-2 text-center">

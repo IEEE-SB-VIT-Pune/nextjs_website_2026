@@ -101,7 +101,7 @@ export async function POST(request: Request) {
     }
 
     // Panel assignment (1-4 concurrency)
-    const assignedPanel = slot.students.length + 1;
+    const assignedPanel = (slot.students.length % 4) + 1;
 
     // Concurrency protection: verify slot size matches our read state to prevent double booking/overbooking
     const updateResult = await Slot.updateOne(

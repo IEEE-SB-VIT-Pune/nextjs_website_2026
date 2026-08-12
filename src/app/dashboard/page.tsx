@@ -91,6 +91,7 @@ export default function DashboardPage() {
   const [bookingStart, setBookingStart] = useState("");
   const [bookingEnd, setBookingEnd] = useState("");
   const [whatsappLink, setWhatsappLink] = useState("https://chat.whatsapp.com/EeEkwbw0LvxA0oOIVHIy1w?s=sh&p=i&mlu=0&ilr=0");
+  const [tokenAlertEmailEnabled, setTokenAlertEmailEnabled] = useState(true);
 
   const isInitialized = React.useRef(false);
 
@@ -140,6 +141,13 @@ export default function DashboardPage() {
           body: JSON.stringify({ key: "whatsappLink", value: whatsappLink }),
         });
 
+        // Save Token Alert Email config
+        await fetch("/api/admin/config", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ key: "tokenAlertEmail", value: tokenAlertEmailEnabled }),
+        });
+
         setConfigsSuccess("Changes auto-saved to database 💾");
       } catch (err) {
         console.error("Auto-save error:", err);
@@ -160,6 +168,7 @@ export default function DashboardPage() {
     bookingStart,
     bookingEnd,
     whatsappLink,
+    tokenAlertEmailEnabled,
   ]);
 
   // Event Manager States
@@ -257,6 +266,10 @@ export default function DashboardPage() {
         const whatsappDoc = data.configs.find((c: any) => c.key === "whatsappLink");
         if (whatsappDoc && whatsappDoc.value) {
           setWhatsappLink(whatsappDoc.value);
+        }
+        const alertEmailDoc = data.configs.find((c: any) => c.key === "tokenAlertEmail");
+        if (alertEmailDoc && alertEmailDoc.value !== undefined) {
+          setTokenAlertEmailEnabled(alertEmailDoc.value !== false);
         }
         setTimeout(() => {
           isInitialized.current = true;
@@ -461,7 +474,15 @@ export default function DashboardPage() {
       });
       const whatsappResData = await resWhatsapp.json();
 
-      if (formResData.success && bookingResData.success && whatsappResData.success) {
+      // Save Token Alert Email config
+      const resAlertEmail = await fetch("/api/admin/config", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ key: "tokenAlertEmail", value: tokenAlertEmailEnabled }),
+      });
+      const alertEmailResData = await resAlertEmail.json();
+
+      if (formResData.success && bookingResData.success && whatsappResData.success && alertEmailResData.success) {
         setConfigsSuccess("All scheduling system configurations saved successfully.");
       } else {
         setConfigsError("One or more configurations failed to update.");
@@ -1223,6 +1244,43 @@ export default function DashboardPage() {
                       disabled={configsLoading}
                       className="h-9 text-xs"
                     />
+                  </div>
+                </div>
+
+                {/* 4. Google Refresh Token Expired Email Alert Section */}
+                <div className="border border-border/40 rounded-xl p-4 bg-muted/5 space-y-4">
+                  <div className="flex items-center justify-between border-b border-border/20 pb-3">
+                    <h3 className="font-bold text-sm text-foreground uppercase tracking-wider flex items-center gap-1.5">
+                      <ShieldAlert className="h-4 w-4 text-amber-500" /> Refresh Token Expiry Email Alert
+                    </h3>
+                    <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold border ${tokenAlertEmailEnabled ? "bg-green-500/10 text-green-400 border-green-500/20" : "bg-destructive/10 text-destructive border-destructive/20"}`}>
+                      {tokenAlertEmailEnabled ? "SENDING ENABLED" : "SENDING STOPPED"}
+                    </span>
+                  </div>
+                  <div className="space-y-2">
+                    <p className="text-xs text-muted-foreground">
+                      Controls whether automated system email notifications with subject <code className="bg-muted px-1.5 py-0.5 rounded text-[11px] font-bold text-foreground">"🚨 URGENT: IEEE VIT Pune Google Refresh Token Expired"</code> are sent to administrators when the Google API refresh token expires.
+                    </p>
+                    <div className="flex gap-2 pt-1">
+                      <Button
+                        type="button"
+                        variant={tokenAlertEmailEnabled ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setTokenAlertEmailEnabled(true)}
+                        className="flex-1 text-xs font-bold"
+                      >
+                        Start Sending Alert Emails
+                      </Button>
+                      <Button
+                        type="button"
+                        variant={!tokenAlertEmailEnabled ? "destructive" : "outline"}
+                        size="sm"
+                        onClick={() => setTokenAlertEmailEnabled(false)}
+                        className="flex-1 text-xs font-bold"
+                      >
+                        Stop Sending Alert Emails
+                      </Button>
+                    </div>
                   </div>
                 </div>
 
