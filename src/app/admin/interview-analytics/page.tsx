@@ -179,8 +179,7 @@ export default function AdminInterviewAnalyticsPage() {
     const sanitize = (str: string) => str.replace(/[^a-zA-Z0-9_-]/g, "_");
     const domainPrefix = selectedDomain ? sanitize(selectedDomain) : "All_Domains";
     const datePart = selectedDate ? `_${sanitize(selectedDate)}` : "";
-    const panelPart = selectedPanel ? `_${sanitize(selectedPanel)}` : "";
-    return `${domainPrefix}${datePart}${panelPart}_Candidates_${filteredCandidates.length}_users.${ext}`;
+    return `${domainPrefix}${datePart}_Candidates_${filteredCandidates.length}_users.${ext}`;
   };
 
   // Helper for status text in exports & UI
@@ -422,7 +421,6 @@ export default function AdminInterviewAnalyticsPage() {
       selectedDate ? `Date: ${selectedDate}` : null,
       selectedTimeSlot ? `Time: ${selectedTimeSlot}` : null,
       selectedDomain ? `Domain: ${selectedDomain}` : null,
-      selectedPanel ? `Panel: ${selectedPanel}` : null,
       selectedStatus ? `Status: ${selectedStatus}` : null,
       searchQuery ? `Search: "${searchQuery}"` : null,
     ]
